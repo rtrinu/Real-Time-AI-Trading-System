@@ -3,11 +3,20 @@ from typing import Optional
 
 
 @dataclass
-class MarketTick:
+class Tick:
     symbol: str
-    timestampe: float
+    timestamp: float
     price: float
-    volume: Optional[float]
-    bid: Optional[float] = None
-    ask: Optional[float] = None
+    volume: float
+
+
+@dataclass
+class Candle:
+    symbol: str
+    timestamp: float
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: Optional[float] = None
     source: Optional[str] = None

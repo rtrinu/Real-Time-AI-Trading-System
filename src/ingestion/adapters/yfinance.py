@@ -1,60 +1,81 @@
 import yfinance as yf
+import time
 import pandas as pd
-from typing import Callable, Optional
-from core.market_data import MarketTick
-from core.adapter.base import BaseMarketAdapter
+from src.core.market_data import Candle
+from typing import List, Callable, Optional, Awaitable
+import asyncio
 
-class YFinanceHistoricalAdapter(BaseMarketAdapter):
-    def __init__(self, interval="1m", period="1mo"):
-        super().__init__()
-        self.interval = interval
-        self.period = period
-        self.symbols=[]
 
-    async def connect(self):
-        self._running = True
+def fetch_history(
+    symbol: str,
+    period: str = "1mo",
+    interval: str = "1h",
+    auto_adjust: bool = True,
+) -> pd.DataFrame:
 
-    async def subscribe(self, symbols: list[str]):
-        self.symbols.extend(symbols)
+    df = yf.download(
+        symbol,
+        period=period,
+        interval=interval,
+        auto_adjust=auto_adjust,
+        progress=False,
+    )
 
-    def fetch_history(self, symbol: str) -> pd.DataFrame:
-        df = yf.download(
-            symbol,
-            period=self.period,
-            interval=self.interval,
-            auto_adjust=True,
-            progress=False
-        )
-
-        if df.empty:
-            return df
-
-        df = df.reset_index()
-        df["symbol"] = symbol
+    if df.empty:
         return df
 
-    async def _stream_loop(self, callback: Callable[[MarketTick], None]):
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = df.columns.get_level_values(0)
 
-        for symbol in self.symbols:
-            df = self.fetch_history(symbol)
+    df = df.reset_index()
 
-            if df is None or df.empty:
-                continue
+    time_col = "Datetime" if "Datetime" in df.columns else "Date"
 
-            for _, row in df.iterrows():
+    df[time_col] = pd.to_datetime(df[time_col], utc=True)
 
-                tick = MarketTick(
-                    symbol=symbol,
-                    price=float(row["Close"]),
-                    volume=float(row["Volume"]) if "Volume" in row else 0,
-                    timestamp=row["Datetime"] if "Datetime" in row else row["Date"]
-                )
+    df["timestamp"] = df[time_col].apply(lambda x: x.timestamp())
 
-                result = callback(tick)
-                if hasattr(result, "__await__"):
-                    await result
+    df["symbol"] = symbol
 
-        self._running = False
+    return df
 
-    async def disconnect(self):
-        self._running = False
+
+def df_to_candles(df: pd.DataFrame):
+    return [
+        Candle(
+            symbol=row.symbol,
+            timestamp=float(row.timestamp),
+            open=float(row.Open),
+            high=float(row.High),
+            low=float(row.Low),
+            close=float(row.Close),
+            volume=float(row.Volume) if "Volume" in df.columns else None,
+            source="yfinance",
+        )
+        for row in df.itertuples(index=False)
+    ]
+
+
+async def stream_history(
+    symbols: list[str],
+    handler: Callable[[Candle], Awaitable[None] | None],
+    period: str = "1mo",
+    interval: str = "1h",
+    delay: float = 0.0,
+):
+    for symbol in symbols:
+        df = fetch_history(symbol, period=period, interval=interval)
+
+        if df.empty:
+            continue
+
+        candles = df_to_candles(df)
+
+        for candle in candles:
+            result = handler(candle)
+
+            if hasattr(result, "__await__"):
+                await result
+
+            if delay:
+                await asyncio.sleep(delay)
