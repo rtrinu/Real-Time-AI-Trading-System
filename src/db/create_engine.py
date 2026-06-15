@@ -1,4 +1,5 @@
 from sqlalchemy import create_engine, text
+from sqlmodel import Session
 from sqlalchemy.orm import sessionmaker
 from core.config import settings
 
@@ -25,3 +26,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def get_session():
+    return Session(engine)
