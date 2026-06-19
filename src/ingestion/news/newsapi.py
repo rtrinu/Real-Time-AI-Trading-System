@@ -26,7 +26,7 @@ class NewsAPISource:
                 to=end_date,
                 language="en",
                 sort_by="publishedAt",
-                page_size=1,
+                page_size=2,
             )
         except Exception as e:
             raise RuntimeError(f"NewsAPI request failed: {e}")
