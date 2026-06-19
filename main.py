@@ -6,6 +6,7 @@ from db.startup import db_startup
 # temp for testing
 from db.crud.market_models import bulk_insert_ohlcv
 
+
 app = FastAPI()
 
 
@@ -13,8 +14,6 @@ app = FastAPI()
 async def startup():
     setup_logging()
     await db_startup()
-    # temp function for testing,
-    bulk_insert_ohlcv()
 
 
 @app.get("/health")
