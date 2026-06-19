@@ -1,11 +1,11 @@
 import requests
 from core.config import settings
-from .base import BaseNewsSource
 from newsapi import NewsApiClient
 from datetime import datetime, timedelta, timezone
+from core.logger_config import logger
 
 
-class NewsAPIStream(BaseNewsSource):
+class NewsAPISource:
     def __init__(self, api_key):
         self.api_key = api_key
         self.newsapi = NewsApiClient(api_key=settings.newsapi_key)
@@ -19,18 +19,19 @@ class NewsAPIStream(BaseNewsSource):
         start_date = end_date - timedelta(days=25)
 
         try:
+            logger.info("Trying NewsAPI endpoint")
             response = self.newsapi.get_everything(
                 q=query,
                 from_param=start_date,
                 to=end_date,
                 language="en",
                 sort_by="publishedAt",
-                page_size=100,
+                page_size=1,
             )
         except Exception as e:
             raise RuntimeError(f"NewsAPI request failed: {e}")
 
         if response.get("status") != "ok":
             raise RuntimeError(f"API error: {response}")
-
-        return response.get("articles", [])
+        articles = response.get("articles")
+        return articles

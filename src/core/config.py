@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     redis_url: str
     finnhub_api: str
     db_url: str
+    newsapi_key: str
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
