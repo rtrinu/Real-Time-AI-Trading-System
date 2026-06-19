@@ -10,7 +10,7 @@ class NewsAPISource:
         self.api_key = api_key
         self.newsapi = NewsApiClient(api_key=settings.newsapi_key)
 
-    def fetch(self, query):
+    def fetch_raw_data(self, query):
         if not query:
             raise ValueError("No Query Input")
         if not self.newsapi:
@@ -35,3 +35,12 @@ class NewsAPISource:
             raise RuntimeError(f"API error: {response}")
         articles = response.get("articles")
         return articles
+
+    def normalise(self, record: dict, symbol: str):
+        return {
+            "symbol": symbol,
+            "title": record.get("title"),
+            "description": record.get("description"),
+            "publishedAt": record.get("publishedAt"),
+            "content": record.get("content"),
+        }

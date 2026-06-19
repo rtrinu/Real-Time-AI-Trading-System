@@ -5,6 +5,7 @@ from db.startup import db_startup
 
 # temp for testing
 from db.crud.market_models import bulk_insert_ohlcv
+from db.crud.news_models import bulk_insert_newsapi
 
 
 app = FastAPI()
@@ -14,6 +15,7 @@ app = FastAPI()
 async def startup():
     setup_logging()
     await db_startup()
+    bulk_insert_newsapi()
 
 
 @app.get("/health")
