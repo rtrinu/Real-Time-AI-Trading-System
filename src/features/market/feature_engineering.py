@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from core.logger_config import logger
 
 
 def log_returns(df, col="close", periods=(1, 5, 10, 20)):
@@ -102,11 +103,11 @@ def mean_reversion_features(df):
         std = df["close"].rolling(w).std()
 
         df[f"zscore_{w}"] = (df["close"] - mean) / (std + 1e-9)
+
         df[f"dist_mean_{w}"] = df["close"] - mean
 
     vwap = (df["close"] * df["volume"]).cumsum() / (df["volume"].cumsum() + 1e-9)
     df["vwap_dist"] = (df["close"] / vwap) - 1
-
     return df
 
 
@@ -166,11 +167,48 @@ def build_all_features(df):
 def split_features(df):
     return {
         "returns": df[["symbol", "timestamp"] + [c for c in df.columns if "ret" in c]],
-        "momentum": df[["symbol", "timestamp", "rsi_7", "rsi_14", "macd", "roc_10"]],
+        "momentum": df[
+            [
+                "symbol",
+                "timestamp",
+                "rsi_7",
+                "rsi_14",
+                "rsi_21",
+                "ema_dist_20",
+                "ema_dist_10_50",
+                "rsi_slope",
+                "macd",
+                "macd_signal",
+                "macd_hist",
+                "roc_10",
+            ]
+        ],
         "volatility": df[
             ["symbol", "timestamp"]
             + [c for c in df.columns if "vol" in c or "atr" in c]
+            + ["bb_width_20"]
         ],
-        "mean_reversion": df[["symbol", "timestamp", "zscore_20", "vwap_dist"]],
-        "volume": df[["symbol", "timestamp", "obv", "vol_z_20"]],
+        "mean_reversion": df[
+            [
+                "symbol",
+                "timestamp",
+                "zscore_10",
+                "zscore_20",
+                "zscore_50",
+                "vwap_dist",
+                "dist_mean_10",
+                "dist_mean_20",
+                "dist_mean_50",
+            ]
+        ],
+        "volume": df[
+            [
+                "symbol",
+                "timestamp",
+                "obv",
+                "vol_z_20",
+                "vol_change",
+                "price_vol_interaction",
+            ]
+        ],
     }
