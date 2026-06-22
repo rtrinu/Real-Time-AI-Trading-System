@@ -161,7 +161,7 @@ def build_all_features(df):
     df = lag_features(df)
     df = time_features(df)
 
-    return df.dropna()
+    return df.dropna(inplace=True)
 
 
 def split_features(df):
