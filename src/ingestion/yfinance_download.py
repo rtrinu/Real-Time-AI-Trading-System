@@ -20,6 +20,9 @@ def download_market_data(
     if isinstance(df.columns, pd.MultiIndex):
         df.columns = df.columns.get_level_values(0)
 
+    if isinstance(df, list):
+        raise TypeError("Yfinance download returned list, expected DataFrame")
+
     df = df.reset_index()
 
     df = df.rename(
@@ -45,6 +48,4 @@ def download_market_data(
 
     df = df[required_cols]
 
-    records = df.to_dict(orient="records")
-
-    return records
+    return df

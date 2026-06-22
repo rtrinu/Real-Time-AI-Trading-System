@@ -79,7 +79,7 @@ def true_range(df):
 def volatility_features(df):
     df["ret"] = df["close"].pct_change()
 
-    for w in [5, 10, 20]:
+    for w in [5, 10, 20, 50]:
         df[f"vol_{w}"] = df["ret"].rolling(w).std()
 
     df["vol_ratio_10_50"] = df["vol_10"] / (df["vol_50"] + 1e-9)
@@ -137,8 +137,8 @@ def lag_features(df):
 
 
 def time_features(df):
-    df["hour"] = df.index.hour
-    df["day_of_week"] = df.index.dayofweek
+    df["hour"] = pd.to_datetime(df["timestamp"]).dt.hour
+    df["day_of_week"] = pd.to_datetime(df["timestamp"]).dt.dayofweek
 
     df["london_session"] = df["hour"].between(7, 16).astype(int)
     df["ny_session"] = df["hour"].between(13, 21).astype(int)
@@ -161,3 +161,16 @@ def build_all_features(df):
     df = time_features(df)
 
     return df.dropna()
+
+
+def split_features(df):
+    return {
+        "returns": df[["symbol", "timestamp"] + [c for c in df.columns if "ret" in c]],
+        "momentum": df[["symbol", "timestamp", "rsi_7", "rsi_14", "macd", "roc_10"]],
+        "volatility": df[
+            ["symbol", "timestamp"]
+            + [c for c in df.columns if "vol" in c or "atr" in c]
+        ],
+        "mean_reversion": df[["symbol", "timestamp", "zscore_20", "vwap_dist"]],
+        "volume": df[["symbol", "timestamp", "obv", "vol_z_20"]],
+    }

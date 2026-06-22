@@ -4,8 +4,9 @@ from core.logger_config import setup_logging
 from db.startup import db_startup
 
 # temp for testing
-from db.crud.market_models import bulk_insert_ohlcv
+from db.crud.market_models import bulk_insert
 from db.crud.news_models import bulk_insert_newsapi
+from pipeline.market_data import run_pipeline
 
 
 app = FastAPI()
@@ -15,7 +16,7 @@ app = FastAPI()
 async def startup():
     setup_logging()
     await db_startup()
-    bulk_insert_newsapi()
+    run_pipeline()
 
 
 @app.get("/health")
