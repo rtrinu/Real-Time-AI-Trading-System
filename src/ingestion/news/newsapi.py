@@ -53,7 +53,7 @@ class NewsAPISource:
         seen = set()
         filtered = []
         for data in raw_data:
-            h = source.article_hash(data["title"])
+            h = self.article_hash(data["title"])
             if h not in seen:
                 seen.add(h)
                 filtered.append(data)

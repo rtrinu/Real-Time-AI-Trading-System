@@ -6,7 +6,7 @@ from db.startup import db_startup
 # temp for testing
 from db.crud.market_models import bulk_insert
 from db.crud.news_models import bulk_insert_newsapi
-from pipeline.market_data import run_pipeline
+from pipeline.news_data import run_newsapi_pipeline
 
 
 app = FastAPI()
@@ -16,7 +16,7 @@ app = FastAPI()
 async def startup():
     setup_logging()
     await db_startup()
-    run_pipeline()
+    run_newsapi_pipeline()
 
 
 @app.get("/health")
