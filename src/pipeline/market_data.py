@@ -13,7 +13,7 @@ from features.market.feature_engineering import build_all_features, split_featur
 from core.logger_config import logger
 
 
-def run_pipeline():
+def run_yfinance_pipeline():
     session = get_session()
     data = download_market_data()
     raw = bulk_insert(data, OHLCV, session)

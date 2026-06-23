@@ -1,4 +1,5 @@
 import requests
+import hashlib
 from core.config import settings
 from newsapi import NewsApiClient
 from datetime import datetime, timedelta, timezone
@@ -44,3 +45,16 @@ class NewsAPISource:
             "publishedAt": record.get("publishedAt"),
             "content": record.get("content"),
         }
+
+    def article_hash(self, title: str):
+        return hashlib.md5(title.lower().strip().encode()).hexdigest()
+
+    def deduplicate_articles(self, raw_data):
+        seen = set()
+        filtered = []
+        for data in raw_data:
+            h = source.article_hash(data["title"])
+            if h not in seen:
+                seen.add(h)
+                filtered.append(data)
+        return filtered
