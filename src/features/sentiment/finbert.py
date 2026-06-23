@@ -26,3 +26,20 @@ class FinBERTSentiment:
 
     def predict_single(self, text: str):
         return self.predict(text)[0]
+
+    def to_score(self, result):
+        label = result["label"]
+        confidence = float(result["score"])
+
+        if label == "positive":
+            sentiment_score = confidence
+        elif label == "negative":
+            sentiment_score = -confidence
+        else:
+            sentiment_score = 0.0
+
+        return {
+            "sentiment_score": sentiment_score,
+            "confidence": confidence,
+            "label": label,
+        }

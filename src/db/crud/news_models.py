@@ -7,11 +7,7 @@ from core.logger_config import logger
 from core.config import settings
 
 
-def bulk_insert_newsapi(symbol: str = "AAPL") -> None:
-
-    source = NewsAPISource(settings.newsapi_key)
-    records = source.fetch_raw_data(symbol)
-
+def bulk_insert_newsapi(records: dict) -> None:
     if not records:
         raise ValueError("No records to insert")
 
@@ -19,8 +15,7 @@ def bulk_insert_newsapi(symbol: str = "AAPL") -> None:
 
     try:
         logger.info("Attempting to insert to database")
-        cleaned = [source.normalise(r, symbol) for r in records]
-        stmt = insert(NewsAPI).values(cleaned)
+        stmt = insert(NewsAPI).values(records)
         session.exec(stmt)
         session.commit()
 

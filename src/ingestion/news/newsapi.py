@@ -27,7 +27,8 @@ class NewsAPISource:
                 to=end_date,
                 language="en",
                 sort_by="publishedAt",
-                page_size=1,
+                page_size=100,
+                page=1,
             )
         except Exception as e:
             raise RuntimeError(f"NewsAPI request failed: {e}")
@@ -36,6 +37,13 @@ class NewsAPISource:
             raise RuntimeError(f"API error: {response}")
         articles = response.get("articles")
         return articles
+
+    def clean_article(self, a):
+        if not a.get("description"):
+            a["description"] = a.get("content", "")[:200]
+        if not a["description"]:
+            return None
+        return a
 
     def normalise(self, record: dict, symbol: str):
         return {

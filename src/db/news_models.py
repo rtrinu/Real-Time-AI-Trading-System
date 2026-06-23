@@ -11,7 +11,9 @@ class NewsAPI(NewsDataBase, table=True):
     __tablename__ = "NewsAPI"
     id: Optional[int] = Field(default=None, primary_key=True)
     title: str
-    description: str
+    description: str = ""
     content: str
     publishedAt: Optional[datetime]
     sentiment_score: Optional[float]
+    confidence: Optional[float]
+    label: Optional[str]
