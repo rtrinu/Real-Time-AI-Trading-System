@@ -42,6 +42,10 @@ def bulk_insert(df, model, session):
     return df
 
 
+def clean(df):
+    return df.drop(columns=["id"], errors="ignore")
+
+
 def load_ohlcv(symbols: list[str], start=None, end=None):
     session = get_session()
     stmt = select(OHLCV).where(OHLCV.symbol.in_(symbols))
@@ -49,7 +53,7 @@ def load_ohlcv(symbols: list[str], start=None, end=None):
         stmt = stmt.where(OHLCV.timestamp >= start)
     if end:
         stmt = stmt.where(OHLCV.timestamp >= end)
-    reults = session.exec(stmt).all()
+    results = session.exec(stmt).all()
     df = pd.DataFrame([r.model_dump() for r in results])
 
     return df
@@ -62,7 +66,7 @@ def load_returns(symbols: list[str], start=None, end=None):
         stmt = stmt.where(ReturnsFeatures.timestamp >= start)
     if end:
         stmt = stmt.where(ReturnsFeatures.timestamp >= end)
-    reults = session.exec(stmt).all()
+    results = session.exec(stmt).all()
     df = pd.DataFrame([r.model_dump() for r in results])
 
     return df
@@ -75,7 +79,7 @@ def load_momentum(symbols: list[str], start=None, end=None):
         stmt = stmt.where(MomentumFeatures.timestamp >= start)
     if end:
         stmt = stmt.where(MomentumFeatures.timestamp >= end)
-    reults = session.exec(stmt).all()
+    results = session.exec(stmt).all()
     df = pd.DataFrame([r.model_dump() for r in results])
 
     return df
@@ -88,13 +92,13 @@ def load_volatility(symbols: list[str], start=None, end=None):
         stmt = stmt.where(VolatilityFeatures.timestamp >= start)
     if end:
         stmt = stmt.where(VolatilityFeatures.timestamp >= end)
-    reults = session.exec(stmt).all()
+    results = session.exec(stmt).all()
     df = pd.DataFrame([r.model_dump() for r in results])
 
     return df
 
 
-def load_mean_revision(symbols: list[str], start=None, end=None):
+def load_mean_reversion(symbols: list[str], start=None, end=None):
     session = get_session()
     stmt = select(MeanReversionFeatures).where(
         MeanReversionFeatures.symbol.in_(symbols)
@@ -103,7 +107,7 @@ def load_mean_revision(symbols: list[str], start=None, end=None):
         stmt = stmt.where(MeanReversionFeatures.timestamp >= start)
     if end:
         stmt = stmt.where(MeanReversionFeatures.timestamp >= end)
-    reults = session.exec(stmt).all()
+    results = session.exec(stmt).all()
     df = pd.DataFrame([r.model_dump() for r in results])
 
     return df
@@ -116,7 +120,7 @@ def load_volume(symbols: list[str], start=None, end=None):
         stmt = stmt.where(VolumeFeatures.timestamp >= start)
     if end:
         stmt = stmt.where(VolumeFeatures.timestamp >= end)
-    reults = session.exec(stmt).all()
+    results = session.exec(stmt).all()
     df = pd.DataFrame([r.model_dump() for r in results])
 
     return df

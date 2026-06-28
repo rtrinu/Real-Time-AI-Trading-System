@@ -9,7 +9,7 @@ class MarketDataBase(SQLModel):
 
 
 class OHLCV(MarketDataBase, table=True):
-    __tablename__ = "OHLCV"
+    __tablename__ = "ohlcv"
     id: Optional[int] = Field(default=None, primary_key=True)
     open: float
     high: float
