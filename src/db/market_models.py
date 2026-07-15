@@ -46,6 +46,11 @@ class ReturnsFeatures(ReturnsFeaturesBase, table=True):
     fwd_ret_10: Optional[float] = None
     fwd_ret_20: Optional[float] = None
 
+    signal_1: Optional[float] = None
+    signal_5: Optional[float] = None
+    signal_10: Optional[float] = None
+    signal_20: Optional[float] = None
+
 
 class MomentumFeaturesBase(SQLModel):
     symbol: str = Field(index=True)

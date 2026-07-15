@@ -7,7 +7,7 @@ from db.startup import db_startup
 from db.crud.market_models import bulk_insert
 from db.crud.news_models import bulk_insert_newsapi
 from pipeline.news_data import run_newsapi_pipeline
-from datasets.master_dataset import build_master_dataset
+from pipeline.market_data import run_yfinance_pipeline
 
 app = FastAPI()
 
@@ -16,6 +16,7 @@ app = FastAPI()
 async def startup():
     setup_logging()
     await db_startup()
+    run_yfinance_pipeline()
 
 
 @app.get("/health")

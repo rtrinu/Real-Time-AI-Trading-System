@@ -26,6 +26,20 @@ def forward_returns(df, col="close", horizons=(1, 5, 10, 20)):
     return df
 
 
+def create_signal(df):
+    thresholds = {
+        1: 0.005,
+        5: 0.02,
+        10: 0.03,
+        20: 0.05,
+    }
+    for h, t in thresholds.items():
+        df[f"signal_{h}"] = 0
+        df.loc[df[f"fwd_ret_{h}"] > t, f"signal_{h}"] = 1
+        df.loc[df[f"fwd_ret_{h}"] < -t, f"signal_{h}"] = -1
+    return df
+
+
 def rolling_return_stats(df, col="close", window=20):
     r = df[col].pct_change()
     df[f"roll_mean_ret_{window}"] = r.rolling(window).mean()
@@ -152,6 +166,7 @@ def build_all_features(df):
     df = pct_returns(df)
     df = rolling_cumulative_return(df)
     df = forward_returns(df)
+    df = create_signal(df)
     df = rolling_return_stats(df)
 
     df = momentum_features(df)
@@ -161,12 +176,15 @@ def build_all_features(df):
     df = lag_features(df)
     df = time_features(df)
 
-    return df.dropna(inplace=True)
+    return df.dropna()
 
 
 def split_features(df):
     return {
-        "returns": df[["symbol", "timestamp"] + [c for c in df.columns if "ret" in c]],
+        "returns": df[
+            ["symbol", "timestamp"]
+            + [c for c in df.columns if "ret" in c or "signal" in c]
+        ],
         "momentum": df[
             [
                 "symbol",
