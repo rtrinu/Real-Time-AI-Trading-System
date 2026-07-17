@@ -1,5 +1,5 @@
 from ingestion.yfinance_download import download_market_data
-from db.crud.market_models import bulk_insert
+from db.crud.general import bulk_insert
 from db.create_engine import get_session
 from db.market_models import (
     OHLCV,
