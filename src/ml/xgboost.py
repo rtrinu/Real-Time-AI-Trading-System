@@ -5,21 +5,21 @@ import joblib
 
 class XGBoostModel:
     def __init__(self):
-        n_estimators = (200,)
-        learning_rate = 0.05
-        max_depth = 5
-        subsample = 0.8
-        colsample_bytree = 0.8
-        random_state = 42
-        n_jobs = 1
-        model = XGBClassifier(
-            self.n_estimators,
-            self.learning_rate,
-            self.max_depth,
-            self.subsample,
-            self.colsample_bytree,
-            self.random_state,
-            self.n_jobs,
+        self.n_estimators = 200
+        self.learning_rate = 0.05
+        self.max_depth = 5
+        self.subsample = 0.8
+        self.colsample_bytree = 0.8
+        self.random_state = 42
+        self.n_jobs = 1
+        self.model = XGBClassifier(
+            n_estimators=self.n_estimators,
+            learning_rate=self.learning_rate,
+            max_depth=self.max_depth,
+            subsample=self.subsample,
+            colsample_bytree=self.colsample_bytree,
+            random_state=self.random_state,
+            n_jobs=self.n_jobs,
         )
 
     def train(self, x_train, y_train):

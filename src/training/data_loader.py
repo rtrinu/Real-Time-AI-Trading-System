@@ -38,5 +38,6 @@ def load_training_data(symbol: str, features: list[str], signal: str):
     merged[feature_cols] = merged[feature_cols].fillna(0)
 
     X = merged[feature_cols]
-    y = merged[signal]
+    y = merged[signal].map({-1: 0, 0: 1, 1: 2})
+
     return X, y

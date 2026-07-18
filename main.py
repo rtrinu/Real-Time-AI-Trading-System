@@ -8,6 +8,8 @@ from db.crud.news_models import bulk_insert_newsapi
 from pipeline.news_data import run_newsapi_pipeline
 from pipeline.market_data import run_yfinance_pipeline
 from training.data_loader import load_training_data
+from ml.xgboost import XGBoostModel
+from training.trainer import train
 
 app = FastAPI()
 
@@ -16,7 +18,8 @@ app = FastAPI()
 async def startup():
     setup_logging()
     await db_startup()
-    load_training_data("AAPL", ["ReturnsFeatures", "Sentiment"], "signal_5")
+    model = XGBoostModel()
+    train(model, ["ReturnsFeatures", "Sentiment"], "signal_5", "AAPL")
 
 
 @app.get("/health")
