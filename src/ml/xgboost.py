@@ -12,6 +12,15 @@ class XGBoostModel:
         colsample_bytree = 0.8
         random_state = 42
         n_jobs = 1
+        model = XGBClassifier(
+            self.n_estimators,
+            self.learning_rate,
+            self.max_depth,
+            self.subsample,
+            self.colsample_bytree,
+            self.random_state,
+            self.n_jobs,
+        )
 
     def train(self, x_train, y_train):
         self.model.fit(x_train, y_train)
