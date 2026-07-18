@@ -6,8 +6,8 @@ import joblib
 class XGBoostModel:
     def __init__(self):
         n_estimators = (200,)
-        learning_rate = (0.05,)
-        max_depth = (5,)
+        learning_rate = 0.05
+        max_depth = 5
         subsample = 0.8
         colsample_bytree = 0.8
         random_state = 42
