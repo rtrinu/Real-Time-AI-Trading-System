@@ -3,8 +3,8 @@
 ## Stack
 
 - FastAPI
-- Redis (streaming)
-- Python ML stack (planned)
+- Redis (planned)
+- Python ML stack (in progress)
 - React frontend (planned)
 
 ## Run
