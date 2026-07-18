@@ -5,7 +5,7 @@ def sentiment_features(news):
     news_df = pd.DataFrame(news)
     news_df["publishedAt"] = pd.to_datetime(news_df["publishedAt"])
 
-    news_df["timestamp"] = news_df["publishedAt"].dt.floor("1h")
+    news_df["timestamp"] = news_df["publishedAt"].dt.floor("D")
 
     features = (
         news_df.groupby(["symbol", "timestamp"])
