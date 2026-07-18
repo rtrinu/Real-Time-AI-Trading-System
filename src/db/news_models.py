@@ -19,6 +19,17 @@ class NewsAPI(NewsDataBase, table=True):
     label: Optional[str]
 
 
+class FinnhubNews(NewsDataBase, table=True):
+    __tablename__ = "FinnHubNews"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    title: str
+    description: str = ""
+    publishedAt: Optional[datetime]
+    sentiment_score: Optional[float]
+    confidence: Optional[float]
+    label: Optional[str]
+
+
 class Sentiment(NewsDataBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     timestamp: Optional[datetime]
