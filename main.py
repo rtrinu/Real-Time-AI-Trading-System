@@ -1,6 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
-from core.logger_config import setup_logging
+from core.logger_config import setup_logging, logger
 from db.startup import db_startup
 from api.routes.news import router as news_router
 
@@ -10,7 +10,7 @@ from pipeline.news_data import run_news_pipeline
 from pipeline.market_data import run_yfinance_pipeline
 from training.data_loader import load_training_data
 from ml.xgboost import XGBoostModel
-from training.trainer import train
+from training.trainer import train, predict
 
 
 app = FastAPI()
@@ -21,8 +21,10 @@ async def startup():
     setup_logging()
     await db_startup()
     model = XGBoostModel()
-    # train(model, ["ReturnsFeatures", "Sentiment"], "signal_5", "AAPL")
-    run_yfinance_pipeline()
+    train(model, ["ReturnsFeatures", "Sentiment"], "signal_5", "AAPL")
+    # run_yfinance_pipeline()
+    result = predict(model, ["ReturnsFeatures", "Sentiment"], "signal_5", "AAPL")
+    logger.info(result)
 
 
 @app.get("/health")
