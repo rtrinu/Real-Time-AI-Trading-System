@@ -10,7 +10,7 @@ from pipeline.news_data import run_news_pipeline
 from pipeline.market_data import run_yfinance_pipeline
 from training.data_loader import load_training_data
 from ml.xgboost import XGBoostModel
-from training.trainer import train, predict
+from training.trainer import train, predict, save_model, load_trained_model
 
 
 app = FastAPI()
@@ -20,9 +20,17 @@ app = FastAPI()
 async def startup():
     setup_logging()
     await db_startup()
-    model = XGBoostModel()
-    train(model, ["ReturnsFeatures", "Sentiment"], "signal_5", "AAPL")
-    result = predict(model, ["ReturnsFeatures", "Sentiment"], "signal_5", "AAPL")
+    features = ["ReturnsFeatures", "Sentiment"]
+    signal = "signal_5"
+    symbol = "AAPL"
+    logger.info("Loading saved model")
+    model = load_trained_model(features, signal, symbol)
+    if model is None:
+        logger.info("No saved model found. Creating new model")
+        model = XGBoostModel()
+        train(model, features, signal, symbol)
+        save_model(model, features, signal, symbol)
+    result = predict(model, features, signal, symbol)
     logger.info(result)
 
 
