@@ -30,3 +30,14 @@ TABLE_MAP = {
     "ReturnsFeatures": ReturnsFeatures,
     "Sentiment": Sentiment,
 }
+
+CALENDAR_FEATURES = [
+    "day_of_week",
+    "month",
+    "quarter",
+    "week_of_year",
+    "is_month_end",
+    "is_month_start",
+    "is_friday",
+    "is_monday",
+]

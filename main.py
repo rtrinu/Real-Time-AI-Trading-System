@@ -20,6 +20,8 @@ app = FastAPI()
 async def startup():
     setup_logging()
     await db_startup()
+    model = XGBoostModel()
+    train(model, ["ReturnsFeatures", "Sentiment"], "signal_5", "AAPL")
 
 
 @app.get("/health")
