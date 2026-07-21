@@ -22,7 +22,6 @@ async def startup():
     await db_startup()
     model = XGBoostModel()
     train(model, ["ReturnsFeatures", "Sentiment"], "signal_5", "AAPL")
-    # run_yfinance_pipeline()
     result = predict(model, ["ReturnsFeatures", "Sentiment"], "signal_5", "AAPL")
     logger.info(result)
 
