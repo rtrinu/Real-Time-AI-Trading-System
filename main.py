@@ -5,10 +5,7 @@ from db.startup import db_startup
 from api.routes.news import router as news_router
 
 # temp for testing
-from db.crud.news_models import bulk_insert_newsapi
-from pipeline.news_data import run_news_pipeline
 from pipeline.market_data import run_yfinance_pipeline
-from training.data_loader import load_training_data
 from ml.xgboost import XGBoostModel
 from training.trainer import train, predict, save_model, load_trained_model
 

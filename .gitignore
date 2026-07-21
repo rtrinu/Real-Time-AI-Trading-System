@@ -9,7 +9,18 @@ wheels/
 # Virtual environments
 .venv
 
+# Environment
 .env
 
-#Models folder
+# Models
 /models
+
+# Testing
+.pytest_cache/
+
+# Logs
+*.log
+
+# Type checking / linting
+.mypy_cache/
+.ruff_cache/
