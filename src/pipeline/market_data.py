@@ -8,6 +8,7 @@ from db.market_models import (
     VolatilityFeatures,
     MeanReversionFeatures,
     VolumeFeatures,
+    RegimeFeatures,
 )
 from features.market.feature_engineering import build_all_features, split_features
 from core.logger_config import logger
@@ -29,3 +30,4 @@ def run_yfinance_pipeline():
     bulk_insert(split["volatility"], VolatilityFeatures, session)
     bulk_insert(split["mean_reversion"], MeanReversionFeatures, session)
     bulk_insert(split["volume"], VolumeFeatures, session)
+    bulk_insert(split["regime"], RegimeFeatures, session)

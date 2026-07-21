@@ -21,7 +21,8 @@ async def startup():
     setup_logging()
     await db_startup()
     model = XGBoostModel()
-    train(model, ["ReturnsFeatures", "Sentiment"], "signal_5", "AAPL")
+    # train(model, ["ReturnsFeatures", "Sentiment"], "signal_5", "AAPL")
+    run_yfinance_pipeline()
 
 
 @app.get("/health")

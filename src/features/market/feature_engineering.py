@@ -161,6 +161,54 @@ def time_features(df):
     return df
 
 
+def detect_regime(df):
+    vol_regime = df["vol_ratio_10_50"].apply(classify_volatility_regime)
+    trend_regime = df.apply(
+        lambda row: classify_trend_regime(row["pct_ret_20"], row["roll_cum_ret_20"]),
+        axis=1,
+    )
+    df["regime"] = df.apply(
+        lambda row: classify_regime(
+            row["vol_z_20"],
+            trend_regime[row.name],
+            vol_regime[row.name],
+        ),
+        axis=1,
+    )
+    return df
+
+
+def classify_volatility_regime(vol_ratio_10_50):
+    if vol_ratio_10_50 > 1.5:
+        return "high_vol"
+    elif vol_ratio_10_50 < 0.7:
+        return "low_vol"
+    else:
+        return "normal"
+
+
+def classify_trend_regime(pct_ret_20, roll_cum_ret_20):
+    if roll_cum_ret_20 > 0 and pct_ret_20 > 0:
+        return "bull"
+    elif roll_cum_ret_20 < 0 and pct_ret_20 < 0:
+        return "bear"
+    else:
+        return "neutral"
+
+
+def classify_regime(vol_z_20, trend_regime, vol_regime):
+    if vol_regime == "high_vol":
+        return "neutral"
+
+    if trend_regime == "bull" and vol_z_20 > 1:
+        return "bull"
+
+    if trend_regime == "bear" and vol_z_20 > 1:
+        return "bear"
+
+    return "neutral"
+
+
 def build_all_features(df):
     df = log_returns(df)
     df = pct_returns(df)
@@ -175,6 +223,8 @@ def build_all_features(df):
     df = volume_features(df)
     df = lag_features(df)
     df = time_features(df)
+
+    df = detect_regime(df)
 
     return df.dropna()
 
@@ -229,4 +279,5 @@ def split_features(df):
                 "price_vol_interaction",
             ]
         ],
+        "regime": df[["symbol", "timestamp", "regime"]],
     }

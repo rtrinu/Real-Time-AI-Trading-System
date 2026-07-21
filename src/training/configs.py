@@ -1,5 +1,5 @@
 # configs.py
-from db.market_models import ReturnsFeatures
+from db.market_models import ReturnsFeatures, RegimeFeatures
 from db.news_models import Sentiment
 
 FEATURE_GROUPS = {
@@ -29,6 +29,7 @@ FEATURE_GROUPS = {
 TABLE_MAP = {
     "ReturnsFeatures": ReturnsFeatures,
     "Sentiment": Sentiment,
+    "RegimeFeatures": RegimeFeatures,
 }
 
 CALENDAR_FEATURES = [

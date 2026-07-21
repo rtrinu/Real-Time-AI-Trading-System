@@ -124,3 +124,13 @@ class VolumeFeatures(VolumeFeaturesBase, table=True):
     vol_z_20: Optional[float] = None
     obv: Optional[float] = None
     price_vol_interaction: Optional[float] = None
+
+
+class RegimeFeaturesBase(SQLModel):
+    symbol: str = Field(index=True)
+    timestamp: datetime = Field(index=True)
+
+
+class RegimeFeatures(RegimeFeaturesBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    regime: Optional[str] = None
