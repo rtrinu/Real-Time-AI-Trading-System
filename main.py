@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from core.logger_config import setup_logging, logger
 from db.startup import db_startup
 from api.routes.news import router as news_router
+from api.routes.predict import router as predict_router
 
 # temp for testing
 from pipeline.market_data import run_yfinance_pipeline
@@ -27,8 +28,7 @@ async def startup():
         model = XGBoostModel()
         train(model, features, signal, symbol)
         save_model(model, features, signal, symbol)
-    result = predict(model, features, signal, symbol)
-    logger.info(result)
+    app.state.model = model
 
 
 @app.get("/health")
@@ -37,6 +37,6 @@ def health():
 
 
 app.include_router(news_router)
-
+app.include_router(predict_router)
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
