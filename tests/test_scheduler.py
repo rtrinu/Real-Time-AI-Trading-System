@@ -5,6 +5,7 @@ from unittest.mock import patch, MagicMock, PropertyMock
 from datetime import datetime, date
 from jobs.model import retrain_model, start_model_scheduler, model_scheduler
 from jobs.market import update_market_db, market_scheduler
+from jobs.news import update_news_data, start_news_scheduler, news_scheduler
 
 
 @pytest.fixture
@@ -91,6 +92,46 @@ class TestUpdateMarketDb:
         with patch.object(market_scheduler, "add_job") as mock_add, \
              patch.object(market_scheduler, "start"):
             update_market_db(mock_app)
+            trigger = mock_add.call_args[0][1]
+            day_field = next(f for f in trigger.fields if str(f) != "*")
+            assert str(day_field) == "mon-fri"
+
+
+class TestUpdateNewsData:
+    @patch("jobs.news.run_news_pipeline")
+    def test_calls_pipeline_with_today(self, mock_pipeline):
+        update_news_data()
+        mock_pipeline.assert_called_once()
+        args = mock_pipeline.call_args
+        assert args[0][0] == "AAPL"
+        assert args[0][1] == date.today().strftime("%Y-%m-%d")
+        assert args[0][2] == date.today().strftime("%Y-%m-%d")
+
+    @patch("jobs.news.run_news_pipeline", side_effect=Exception("API error"))
+    def test_handles_exception_gracefully(self, mock_pipeline):
+        update_news_data()
+        mock_pipeline.assert_called_once()
+
+
+class TestStartNewsScheduler:
+    def test_adds_job_and_starts(self, mock_app):
+        with patch.object(news_scheduler, "add_job") as mock_add, \
+             patch.object(news_scheduler, "start") as mock_start:
+            start_news_scheduler(mock_app)
+            mock_add.assert_called_once()
+            mock_start.assert_called_once()
+
+    def test_job_has_correct_id(self, mock_app):
+        with patch.object(news_scheduler, "add_job") as mock_add, \
+             patch.object(news_scheduler, "start"):
+            start_news_scheduler(mock_app)
+            call_kwargs = mock_add.call_args
+            assert call_kwargs[1]["id"] == "update_news" or call_kwargs.kwargs.get("id") == "update_news"
+
+    def test_job_runs_weekdays_only(self, mock_app):
+        with patch.object(news_scheduler, "add_job") as mock_add, \
+             patch.object(news_scheduler, "start"):
+            start_news_scheduler(mock_app)
             trigger = mock_add.call_args[0][1]
             day_field = next(f for f in trigger.fields if str(f) != "*")
             assert str(day_field) == "mon-fri"

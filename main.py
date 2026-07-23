@@ -6,6 +6,7 @@ from api.routes.news import router as news_router
 from api.routes.predict import router as predict_router
 from jobs.model import start_model_scheduler, model_scheduler
 from jobs.market import market_scheduler, update_market_db
+from jobs.news import start_news_scheduler, news_scheduler
 
 # temp for testing
 from pipeline.market_data import run_yfinance_pipeline
@@ -25,6 +26,7 @@ async def startup():
     symbol = "AAPL"
     logger.info("Loading saved model")
     update_market_db(app)
+    start_news_scheduler(app)
     start_model_scheduler(app)
     model = load_trained_model(features, signal, symbol)
     if model is None:
@@ -38,6 +40,7 @@ async def startup():
 @app.on_event("shutdown")
 async def shutdown():
     market_scheduler.shutdown()
+    news_scheduler.shutdown()
     model_scheduler.shutdown()
 
 

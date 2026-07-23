@@ -9,6 +9,7 @@ from features.sentiment.sentiment import sentiment_features
 from db.news_models import Sentiment, FinnhubNews
 from db.create_engine import get_session
 import pandas as pd
+from datetime import datetime, date
 
 
 def run_news_pipeline(
@@ -60,3 +61,15 @@ def run_news_pipeline(
     bulk_insert(pd.DataFrame(finnhub_articles), FinnhubNews, session)
     sentiment_features_df = sentiment_features(enriched)
     bulk_insert(sentiment_features_df, Sentiment, session)
+
+
+def get_todays_news(symbol: str = "AAPL"):
+    newsapi_source = NewsAPISource(settings.newsapi_key)
+    finnhub_source = FinnhubNewsSource(settings.finnhub_api)
+
+    today = date.today()
+    start = datetime(today.year, today.month, today.day)
+    end = datetime(today.year, today.month, today.day, 23, 59, 59)
+
+    newsapi_raw = newsapi_source.get_todays_news(symbol)
+    finnhub_raw = finnhub_source.fetch_raw_data(symbol, start, end)

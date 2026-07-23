@@ -2,7 +2,7 @@ import requests
 import hashlib
 from core.config import settings
 from newsapi import NewsApiClient
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, date
 from core.logger_config import logger
 
 
@@ -66,3 +66,32 @@ class NewsAPISource:
                 seen.add(h)
                 filtered.append(data)
         return filtered
+
+    def get_todays_news(self):
+        if not query:
+            raise ValueError("No Query Input")
+        if not self.newsapi:
+            raise RuntimeError("No Newsapi Client Instance")
+
+        today = date.today()
+        start = datetime(today.year, today.month, today.day)
+        end = datetime(today.year, today.month, today.day, 23, 59, 59)
+
+        try:
+            logger.info("Trying NewsAPI endpoint")
+            response = self.newsapi.get_everything(
+                q=query,
+                from_param=start,
+                to=end,
+                language="en",
+                sort_by="publishedAt",
+                page_size=100,
+                page=1,
+            )
+        except Exception as e:
+            raise RuntimeError(f"NewsAPI request failed: {e}")
+
+        if response.get("status") != "ok":
+            raise RuntimeError(f"API error: {response}")
+        articles = response.get("articles")
+        return articles
