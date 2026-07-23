@@ -26,7 +26,3 @@ def bulk_insert(df, model, session):
     session.execute(insert(model), records)
     session.commit()
     return df
-
-
-def clean(df):
-    return df.drop(columns=["id"], errors="ignore")

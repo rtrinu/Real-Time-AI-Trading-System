@@ -1,6 +1,5 @@
 import os
 from datetime import datetime, date
-from core.config import settings
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from ml.xgboost import XGBoostModel

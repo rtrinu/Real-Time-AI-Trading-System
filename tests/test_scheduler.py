@@ -114,24 +114,25 @@ class TestUpdateNewsData:
 
 
 class TestStartNewsScheduler:
-    def test_adds_job_and_starts(self, mock_app):
+    def test_adds_jobs_and_starts(self, mock_app):
         with patch.object(news_scheduler, "add_job") as mock_add, \
              patch.object(news_scheduler, "start") as mock_start:
             start_news_scheduler(mock_app)
-            mock_add.assert_called_once()
+            assert mock_add.call_count == 2
             mock_start.assert_called_once()
 
-    def test_job_has_correct_id(self, mock_app):
+    def test_job_has_correct_ids(self, mock_app):
         with patch.object(news_scheduler, "add_job") as mock_add, \
              patch.object(news_scheduler, "start"):
             start_news_scheduler(mock_app)
-            call_kwargs = mock_add.call_args
-            assert call_kwargs[1]["id"] == "update_news" or call_kwargs.kwargs.get("id") == "update_news"
+            ids = [call.kwargs.get("id") or call[1].get("id") for call in mock_add.call_args_list]
+            assert "update_news" in ids
+            assert "update_news_frequent" in ids
 
-    def test_job_runs_weekdays_only(self, mock_app):
+    def test_daily_job_runs_every_day(self, mock_app):
         with patch.object(news_scheduler, "add_job") as mock_add, \
              patch.object(news_scheduler, "start"):
             start_news_scheduler(mock_app)
-            trigger = mock_add.call_args[0][1]
-            day_field = next(f for f in trigger.fields if str(f) != "*")
-            assert str(day_field) == "mon-fri"
+            daily_call = mock_add.call_args_list[0]
+            trigger = daily_call[0][1]
+            assert "mon-fri" not in str(trigger)

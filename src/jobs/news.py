@@ -1,8 +1,10 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.interval import IntervalTrigger
 from pipeline.news_data import run_news_pipeline
+from pipeline.news_data import fetch_finnhub_only
 from core.logger_config import logger
-from datetime import date, timedelta
+from datetime import date
 
 
 news_scheduler = AsyncIOScheduler()
@@ -21,11 +23,26 @@ def update_news_data():
         logger.warning(f"News update failed: {e}")
 
 
+def update_news_frequent():
+    symbol = "AAPL"
+    try:
+        fetch_finnhub_only(symbol)
+        logger.info(f"Frequent news update completed for {symbol}")
+    except Exception as e:
+        logger.warning(f"Frequent news update failed: {e}")
+
+
 def start_news_scheduler(app):
     news_scheduler.add_job(
         update_news_data,
         CronTrigger(hour=17, minute=0),
         id="update_news",
+        replace_existing=True,
+    )
+    news_scheduler.add_job(
+        update_news_frequent,
+        IntervalTrigger(minutes=15),
+        id="update_news_frequent",
         replace_existing=True,
     )
     news_scheduler.start()

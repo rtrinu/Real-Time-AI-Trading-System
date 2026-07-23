@@ -9,7 +9,8 @@ from features.sentiment.sentiment import sentiment_features
 from db.news_models import Sentiment, FinnhubNews
 from db.create_engine import get_session
 import pandas as pd
-from datetime import datetime, date
+from datetime import datetime, timedelta, timezone
+from sqlmodel import select, func
 
 
 def run_news_pipeline(
@@ -63,13 +64,69 @@ def run_news_pipeline(
     bulk_insert(sentiment_features_df, Sentiment, session)
 
 
-def get_todays_news(symbol: str = "AAPL"):
-    newsapi_source = NewsAPISource(settings.newsapi_key)
+def fetch_finnhub_only(symbol: str = "AAPL"):
+    logger.info(f"Starting frequent Finnhub news fetch for {symbol}")
+    session = get_session()
+
+    result = session.exec(
+        select(func.max(FinnhubNews.publishedAt))
+    ).first()
+    if result:
+        last_fetched = result
+        logger.info(f"Last fetched article: {last_fetched}")
+    else:
+        last_fetched = datetime.now(timezone.utc) - timedelta(days=1)
+        logger.info("No previous articles found, fetching last 24 hours")
+
+    from_date = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
+    to_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
     finnhub_source = FinnhubNewsSource(settings.finnhub_api)
+    finnhub_raw = finnhub_source.fetch_raw_data(symbol, from_date, to_date)
 
-    today = date.today()
-    start = datetime(today.year, today.month, today.day)
-    end = datetime(today.year, today.month, today.day, 23, 59, 59)
+    if not finnhub_raw:
+        logger.info("No new articles from Finnhub")
+        return
 
-    newsapi_raw = newsapi_source.get_todays_news(symbol)
-    finnhub_raw = finnhub_source.fetch_raw_data(symbol, start, end)
+    finnhub_cleaned = [finnhub_source.normalise(r, symbol) for r in finnhub_raw]
+
+    existing_titles = session.exec(
+        select(FinnhubNews.title)
+    ).all()
+    existing_hashes = set()
+    for title in existing_titles:
+        h = finnhub_source.article_hash(title)
+        existing_hashes.add(h)
+
+    unique_articles = []
+    for article in finnhub_cleaned:
+        h = finnhub_source.article_hash(article["title"])
+        if h not in existing_hashes:
+            if article["publishedAt"] > last_fetched:
+                unique_articles.append(article)
+                existing_hashes.add(h)
+
+    if not unique_articles:
+        logger.info("No new unique articles to insert")
+        return
+
+    logger.info(f"Found {len(unique_articles)} new unique articles")
+
+    model = FinBERTSentiment()
+    texts = [
+        article["title"] + " " + (article["description"] or " ")
+        for article in unique_articles
+    ]
+    sentiments = model.predict(texts)
+    for article, sentiment in zip(unique_articles, sentiments):
+        article.update(model.to_score(sentiment))
+
+    enriched = [finnhub_source.clean_article(a) for a in unique_articles if a]
+    enriched = [a for a in enriched if a is not None]
+
+    bulk_insert(pd.DataFrame(enriched), FinnhubNews, session)
+    logger.info(f"Inserted {len(enriched)} new articles for {symbol}")
+
+    sentiment_features_df = sentiment_features(enriched)
+    bulk_insert(sentiment_features_df, Sentiment, session)
+    logger.info("Sentiment features updated")

@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel, Field
 from datetime import datetime
-from typing import Annotated, Optional
+from typing import Optional
 
 
 class NewsDataBase(SQLModel):

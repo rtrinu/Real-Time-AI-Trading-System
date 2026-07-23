@@ -1,7 +1,4 @@
-from ingestion.yfinance_download import (
-    download_market_data,
-    download_todays_market_data,
-)
+from ingestion.yfinance_download import download_market_data
 from db.crud.general import bulk_insert
 from db.create_engine import get_session
 from db.market_models import (
@@ -28,7 +25,6 @@ def run_yfinance_pipeline():
     logger.info("Creating market data features")
     features = build_all_features(raw)
     split = split_features(features)
-    logger.info(type(split))
 
     logger.info("Bulk inserting into features' tables")
     bulk_insert(split["returns"], ReturnsFeatures, session)
@@ -41,7 +37,7 @@ def run_yfinance_pipeline():
 
 def update_market_data():
     session = get_session()
-    data = download_todays_market_data()
+    data = download_market_data(period="1d")
 
     today = date.today()
     start = datetime(today.year, today.month, today.day)

@@ -24,9 +24,6 @@ class FinBERTSentiment:
             {"label": r["label"].lower(), "score": float(r["score"])} for r in results
         ]
 
-    def predict_single(self, text: str):
-        return self.predict(text)[0]
-
     def to_score(self, result):
         label = result["label"]
         confidence = float(result["score"])

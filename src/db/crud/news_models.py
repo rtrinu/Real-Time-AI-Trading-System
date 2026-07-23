@@ -1,10 +1,8 @@
 from sqlmodel import Session
 from sqlalchemy import insert
 from db.news_models import NewsAPI
-from ingestion.news.newsapi import NewsAPISource
 from db.create_engine import get_session
 from core.logger_config import logger
-from core.config import settings
 
 
 def bulk_insert_newsapi(records: dict) -> None:

@@ -8,10 +8,8 @@ from jobs.model import start_model_scheduler, model_scheduler
 from jobs.market import market_scheduler, update_market_db
 from jobs.news import start_news_scheduler, news_scheduler
 
-# temp for testing
-from pipeline.market_data import run_yfinance_pipeline
 from ml.xgboost import XGBoostModel
-from training.trainer import train, predict, save_model, load_trained_model
+from training.trainer import train, save_model, load_trained_model
 
 
 app = FastAPI()

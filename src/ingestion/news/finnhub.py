@@ -1,6 +1,4 @@
-from core.config import settings
 import finnhub
-import pandas as pd
 from datetime import datetime, timezone
 import hashlib
 from core.logger_config import logger
@@ -39,9 +37,9 @@ class FinnhubNewsSource:
                 filtered.append(data)
         return filtered
 
-    def clean_articles(self, a: dict):
+    def clean_article(self, a):
         if not a.get("description"):
-            a["description"] = a.get("summary", "")[:200]
+            a["description"] = a.get("content", "")[:200]
         if not a["description"]:
             return None
         return a
