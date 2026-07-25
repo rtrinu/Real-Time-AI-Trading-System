@@ -4,6 +4,7 @@ from core.logger_config import setup_logging, logger
 from db.startup import db_startup
 from api.routes.news import router as news_router
 from api.routes.predict import router as predict_router
+from api.routes.backtest import router as backtest_router
 from jobs.model import start_model_scheduler, model_scheduler
 from jobs.market import market_scheduler, update_market_db
 from jobs.news import start_news_scheduler, news_scheduler
@@ -60,5 +61,6 @@ def health():
 
 app.include_router(news_router)
 app.include_router(predict_router)
+app.include_router(backtest_router)
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
