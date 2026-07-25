@@ -12,7 +12,9 @@ model_scheduler = AsyncIOScheduler()
 def retrain_model(app):
     symbol = "AAPL"
     signal = "signal_5"
-    model_path = f"models/{symbol}_{signal}.joblib"
+    features = ["ReturnsFeatures", "Sentiment"]
+    key = _feature_key(features)
+    model_path = f"models/{symbol}_{signal}_{key}.joblib"
 
     if os.path.exists(model_path):
         mtime = datetime.fromtimestamp(os.path.getmtime(model_path)).date()

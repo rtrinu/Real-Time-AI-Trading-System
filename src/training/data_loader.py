@@ -32,6 +32,18 @@ def load_training_data(symbol: str, features: list[str], signal: str):
 
     keep = ["symbol", "date"] + feature_cols + [signal]
     merged = merged[[c for c in keep if c in merged.columns]]
+
+    if signal not in merged.columns:
+        signal_rows = session.exec(
+            select(ReturnsFeatures).where(ReturnsFeatures.symbol == symbol)
+        ).all()
+        signal_df = pd.DataFrame([r.model_dump() for r in signal_rows])
+        signal_df["timestamp"] = pd.to_datetime(signal_df["timestamp"])
+        signal_df["date"] = signal_df["timestamp"].dt.date
+        merged = pd.merge(
+            merged, signal_df[["date", signal]], on="date", how="left"
+        )
+
     merged = add_calendar_features(merged)
     merged[feature_cols] = merged[feature_cols].fillna(0)
     X = merged[feature_cols]

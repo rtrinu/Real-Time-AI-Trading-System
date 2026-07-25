@@ -41,8 +41,9 @@ def predict(model_type, features: list[str], signal: str, symbol: str):
 
 def save_model(model_type, features, signal, symbol, path="models"):
     os.makedirs(path, exist_ok=True)
-    model_path = os.path.join(path, f"{symbol}_{signal}.joblib")
-    meta_path = os.path.join(path, f"{symbol}_{signal}_meta.json")
+    key = _feature_key(features)
+    model_path = os.path.join(path, f"{symbol}_{signal}_{key}.joblib")
+    meta_path = os.path.join(path, f"{symbol}_{signal}_{key}_meta.json")
     model_type.save(model_path)
     with open(meta_path, "w") as f:
         json.dump({"features": features, "signal": signal, "symbol": symbol}, f)
@@ -50,8 +51,10 @@ def save_model(model_type, features, signal, symbol, path="models"):
 
 
 def load_trained_model(features, signal, symbol, path="models"):
-    model_path = os.path.join(path, f"{symbol}_{signal}.joblib")
-    meta_path = os.path.join(path, f"{symbol}_{signal}_meta.json")
+    key = _feature_key(features)
+    model_path = os.path.join(path, f"{symbol}_{signal}_{key}.joblib")
+    meta_path = os.path.join(path, f"{symbol}_{signal}_{key}_meta.json")
+
     if not os.path.exists(model_path) or not os.path.exists(meta_path):
         return None
     with open(meta_path) as f:
@@ -63,3 +66,7 @@ def load_trained_model(features, signal, symbol, path="models"):
     model.load(model_path)
     logger.info(f"Model loaded from {model_path}")
     return model
+
+
+def _feature_key(features):
+    return "_".join(f.replace("Features", "").lower() for f in sorted(features))

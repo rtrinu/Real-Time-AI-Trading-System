@@ -26,7 +26,7 @@ async def startup():
     await db_startup()
     # run_news_pipeline()
     # run_yfinance_pipeline()
-    features = ["ReturnsFeatures", "Sentiment"]
+    features = ["MomentumFeatures", "Sentiment"]
     signal = "signal_5"
     symbol = "AAPL"
     logger.info("Loading saved model")

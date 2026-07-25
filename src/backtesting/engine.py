@@ -2,7 +2,7 @@ from db.create_engine import get_session
 from training.configs import TABLE_MAP, FEATURE_GROUPS, CALENDAR_FEATURES
 from training.data_loader import add_calendar_features
 import pandas as pd
-from db.market_models import OHLCV
+from db.market_models import OHLCV, ReturnsFeatures
 from sqlmodel import select
 from backtesting.metrics import calc_metrics
 from backtesting.visualisation import save_all_charts
@@ -59,6 +59,18 @@ class VectorisedBacktest:
 
         keep = ["symbol", "date"] + feature_cols + [signal]
         merged = merged[[c for c in keep if c in merged.columns]]
+
+        if signal not in merged.columns:
+            signal_rows = session.exec(
+                select(ReturnsFeatures).where(ReturnsFeatures.symbol == symbol)
+            ).all()
+            signal_df = pd.DataFrame([r.model_dump() for r in signal_rows])
+            signal_df["timestamp"] = pd.to_datetime(signal_df["timestamp"])
+            signal_df["date"] = signal_df["timestamp"].dt.date
+            merged = pd.merge(
+                merged, signal_df[["date", signal]], on="date", how="left"
+            )
+
         merged = add_calendar_features(merged)
         merged[feature_cols] = merged[feature_cols].fillna(0)
 

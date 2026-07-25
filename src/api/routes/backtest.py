@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from backtesting.engine import VectorisedBacktest
 from pydantic import BaseModel
 from backtesting.visualisation import save_all_charts

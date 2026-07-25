@@ -1,5 +1,5 @@
 # configs.py
-from db.market_models import ReturnsFeatures, RegimeFeatures
+from db.market_models import ReturnsFeatures, MomentumFeatures, RegimeFeatures
 from db.news_models import Sentiment
 
 FEATURE_GROUPS = {
@@ -24,13 +24,27 @@ FEATURE_GROUPS = {
         "positive_count",
         "negative_count",
     ],
+    "MomentumFeatures": [
+        "rsi_7",
+        "rsi_14",
+        "rsi_21",
+        "ema_dist_20",
+        "ema_dist_10_50",
+        "rsi_slope",
+        "roc_10",
+        "macd",
+        "macd_signal",
+        "macd_hist",
+    ],
 }
 
 TABLE_MAP = {
     "ReturnsFeatures": ReturnsFeatures,
     "Sentiment": Sentiment,
+    "MomentumFeatures": MomentumFeatures,
     "RegimeFeatures": RegimeFeatures,
 }
+
 
 CALENDAR_FEATURES = [
     "day_of_week",
