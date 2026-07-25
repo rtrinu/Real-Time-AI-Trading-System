@@ -19,6 +19,7 @@ def plot_equity_curve(df, metrics, save_path):
     fig.tight_layout()
     fig.savefig(save_path, dpi=150)
     plt.close(fig)
+    return save_path
 
 
 def plot_drawdown(df, save_path):
