@@ -24,3 +24,7 @@ wheels/
 # Type checking / linting
 .mypy_cache/
 .ruff_cache/
+
+# Backtest outputs
+backtest_results/
+*.png

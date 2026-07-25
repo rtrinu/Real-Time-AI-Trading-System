@@ -11,6 +11,10 @@ from jobs.news import start_news_scheduler, news_scheduler
 from ml.xgboost import XGBoostModel
 from training.trainer import train, save_model, load_trained_model
 
+# Backtest
+from backtesting.engine import VectorisedBacktest
+from pipeline.market_data import run_yfinance_pipeline
+from pipeline.news_data import run_news_pipeline
 
 app = FastAPI()
 
@@ -19,6 +23,8 @@ app = FastAPI()
 async def startup():
     setup_logging()
     await db_startup()
+    # run_news_pipeline()
+    # run_yfinance_pipeline()
     features = ["ReturnsFeatures", "Sentiment"]
     signal = "signal_5"
     symbol = "AAPL"
@@ -33,6 +39,11 @@ async def startup():
         train(model, features, signal, symbol)
         save_model(model, features, signal, symbol)
     app.state.model = model
+    bt = VectorisedBacktest(
+        model=model, symbol=symbol, features=features, signal=signal, save_charts=True
+    )
+    results = bt.run()
+    print(results["metrics"])
 
 
 @app.on_event("shutdown")
