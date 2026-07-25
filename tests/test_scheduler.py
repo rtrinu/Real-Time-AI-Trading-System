@@ -21,9 +21,8 @@ class TestRetrainModel:
     @patch("os.path.exists", return_value=False)
     def test_trains_when_no_saved_model(self, mock_exists, mock_save, mock_train, mock_app):
         retrain_model(mock_app)
-        mock_train.assert_called_once()
-        mock_save.assert_called_once()
-        assert mock_app.state.model is not None
+        assert mock_train.call_count == 3
+        assert mock_save.call_count == 3
 
     @patch("jobs.model.train")
     @patch("jobs.model.save_model")
@@ -46,15 +45,15 @@ class TestRetrainModel:
         with patch("jobs.model.datetime") as mock_dt:
             mock_dt.fromtimestamp.return_value.date.return_value = yesterday
             retrain_model(mock_app)
-        mock_train.assert_called_once()
-        mock_save.assert_called_once()
+        assert mock_train.call_count == 3
+        assert mock_save.call_count == 3
 
     @patch("jobs.model.train")
     @patch("jobs.model.save_model")
     @patch("os.path.exists", return_value=False)
     def test_updates_app_state(self, mock_exists, mock_save, mock_train, mock_app):
         retrain_model(mock_app)
-        assert mock_app.state.model is not None
+        assert mock_app.state.models is not None
 
 
 class TestStartModelScheduler:

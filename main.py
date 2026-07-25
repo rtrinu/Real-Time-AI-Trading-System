@@ -11,37 +11,53 @@ from jobs.news import start_news_scheduler, news_scheduler
 
 from ml.xgboost import XGBoostModel
 from training.trainer import train, save_model, load_trained_model
-
-# Backtest
+from pipeline.market_data import update_market_data
 from backtesting.engine import VectorisedBacktest
-from pipeline.market_data import run_yfinance_pipeline
-from pipeline.news_data import run_news_pipeline
 
 app = FastAPI()
+
+MODELS = [
+    ["MomentumFeatures", "Sentiment"],
+    ["MomentumFeatures", "Sentiment", "MeanReversionFeatures"],
+    ["MomentumFeatures", "MeanReversionFeatures"],
+]
 
 
 @app.on_event("startup")
 async def startup():
     setup_logging()
     await db_startup()
-    # run_news_pipeline()
-    # run_yfinance_pipeline()
-    features = ["MomentumFeatures", "Sentiment"]
+
     signal = "signal_5"
     symbol = "AAPL"
-    logger.info("Loading saved model")
-    update_market_db(app)
+
+    logger.info("Updating market data")
+    update_market_data()
+
     start_news_scheduler(app)
     start_model_scheduler(app)
-    model = load_trained_model(features, signal, symbol)
-    if model is None:
-        logger.info("No saved model found. Creating new model")
-        model = XGBoostModel()
-        train(model, features, signal, symbol)
-        save_model(model, features, signal, symbol)
-    app.state.model = model
+    update_market_db(app)
+
+    app.state.models = {}
+    for features in MODELS:
+        key = "+".join(f.replace("Features", "") for f in features)
+        model = load_trained_model(features, signal, symbol)
+        if model is None:
+            logger.info(f"Training new model: {key}")
+            model = XGBoostModel()
+            train(model, features, signal, symbol)
+            save_model(model, features, signal, symbol)
+        else:
+            logger.info(f"Loaded model: {key}")
+        app.state.models[key] = {"model": model, "features": features}
+
+    primary = app.state.models["Momentum+Sentiment"]
     bt = VectorisedBacktest(
-        model=model, symbol=symbol, features=features, signal=signal, save_charts=True
+        model=primary["model"],
+        symbol=symbol,
+        features=primary["features"],
+        signal=signal,
+        save_charts=True,
     )
     results = bt.run()
     print(results["metrics"])

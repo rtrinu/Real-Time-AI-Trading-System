@@ -13,7 +13,7 @@ from db.market_models import (
 from features.market.feature_engineering import build_all_features, split_features
 from core.logger_config import logger
 from sqlmodel import select
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 import pandas as pd
 
 
@@ -36,28 +36,35 @@ def run_yfinance_pipeline():
 
 
 def update_market_data():
+    if datetime.today().weekday() >= 5:
+        logger.info("Weekend — skipping market data update")
+        return
+
     session = get_session()
     data = download_market_data(period="1d")
 
-    today = date.today()
-    start = datetime(today.year, today.month, today.day)
-    end = datetime(today.year, today.month, today.day, 23, 59, 59)
+    symbol = data["symbol"].iloc[0]
+    data_ts = data["timestamp"].iloc[0]
+    data_date = pd.Timestamp(data_ts).date()
+    start = datetime(data_date.year, data_date.month, data_date.day)
+    end = datetime(data_date.year, data_date.month, data_date.day, 23, 59, 59)
+
     existing = session.exec(
         select(OHLCV).where(
-            OHLCV.symbol == data["symbol"].iloc[0],
+            OHLCV.symbol == symbol,
             OHLCV.timestamp >= start,
             OHLCV.timestamp <= end,
         )
     ).first()
     if existing:
-        logger.info("Data for today already exists, skipping")
+        logger.info(f"Data for {data_date} already exists, skipping")
         return
 
     lookback = datetime.today() - timedelta(days=60)
     history = session.exec(
         select(OHLCV)
         .where(
-            OHLCV.symbol == data["symbol"].iloc[0],
+            OHLCV.symbol == symbol,
             OHLCV.timestamp >= lookback,
         )
         .order_by(OHLCV.timestamp)
@@ -67,6 +74,12 @@ def update_market_data():
     combined = pd.concat([history_df, data], ignore_index=True)
 
     features = build_all_features(combined)
+
+    if features.empty:
+        logger.warning("No features generated — DB may lack history. Falling back to full download.")
+        run_yfinance_pipeline()
+        return
+
     latest = features.iloc[[-1]]
     split = split_features(latest)
 

@@ -39,6 +39,35 @@ def predict(model_type, features: list[str], signal: str, symbol: str):
     }
 
 
+def ensemble_predict(models: dict, signal: str, symbol: str):
+    import numpy as np
+
+    signal_map = {0: "sell", 1: "hold", 2: "buy"}
+    all_probas = []
+
+    for key, entry in models.items():
+        model = entry["model"]
+        features = entry["features"]
+        x_latest, date = load_latest_features(features, symbol, signal)
+        if x_latest.empty:
+            continue
+        proba = model.predict_proba(x_latest)
+        all_probas.append(proba)
+
+    if not all_probas:
+        return {"signal": "hold", "confidence": 0.0, "date": date}
+
+    avg_probas = np.mean(all_probas, axis=0)
+    prediction = int(np.argmax(avg_probas))
+    confidence = float(np.max(avg_probas))
+
+    return {
+        "signal": signal_map[prediction],
+        "confidence": confidence,
+        "date": date,
+    }
+
+
 def save_model(model_type, features, signal, symbol, path="models"):
     os.makedirs(path, exist_ok=True)
     key = _feature_key(features)

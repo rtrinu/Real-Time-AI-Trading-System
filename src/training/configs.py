@@ -1,5 +1,12 @@
 # configs.py
-from db.market_models import ReturnsFeatures, MomentumFeatures, RegimeFeatures
+from db.market_models import (
+    ReturnsFeatures,
+    MomentumFeatures,
+    RegimeFeatures,
+    VolatilityFeatures,
+    MeanReversionFeatures,
+    VolumeFeatures,
+)
 from db.news_models import Sentiment
 
 FEATURE_GROUPS = {
@@ -36,6 +43,30 @@ FEATURE_GROUPS = {
         "macd_signal",
         "macd_hist",
     ],
+    "VolatilityFeatures": [
+        "vol_5",
+        "vol_10",
+        "vol_20",
+        "vol_ratio_10_50",
+        "atr_14",
+        "bb_width_20",
+        "vol_of_vol",
+    ],
+    "MeanReversionFeatures": [
+        "zscore_10",
+        "zscore_20",
+        "zscore_50",
+        "dist_mean_10",
+        "dist_mean_20",
+        "dist_mean_50",
+        "vwap_dist",
+    ],
+    "VolumeFeatures": [
+        "vol_change",
+        "vol_z_20",
+        "obv",
+        "price_vol_interaction",
+    ],
 }
 
 TABLE_MAP = {
@@ -43,6 +74,9 @@ TABLE_MAP = {
     "Sentiment": Sentiment,
     "MomentumFeatures": MomentumFeatures,
     "RegimeFeatures": RegimeFeatures,
+    "VolatilityFeatures": VolatilityFeatures,
+    "MeanReversionFeatures": MeanReversionFeatures,
+    "VolumeFeatures": VolumeFeatures,
 }
 
 

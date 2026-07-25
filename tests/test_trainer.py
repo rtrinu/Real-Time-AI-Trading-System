@@ -6,7 +6,7 @@ import tempfile
 import json
 from unittest.mock import patch, MagicMock
 from ml.xgboost import XGBoostModel
-from training.trainer import create_split, save_model, load_trained_model, predict
+from training.trainer import create_split, save_model, load_trained_model, predict, _feature_key
 
 
 @pytest.fixture
@@ -69,18 +69,20 @@ class TestSaveModel:
         features = ["ReturnsFeatures", "Sentiment"]
         signal = "signal_5"
         symbol = "AAPL"
+        key = _feature_key(features)
         with tempfile.TemporaryDirectory() as tmpdir:
             save_model(trained_model, features, signal, symbol, path=tmpdir)
-            assert os.path.exists(os.path.join(tmpdir, "AAPL_signal_5.joblib"))
-            assert os.path.exists(os.path.join(tmpdir, "AAPL_signal_5_meta.json"))
+            assert os.path.exists(os.path.join(tmpdir, f"AAPL_signal_5_{key}.joblib"))
+            assert os.path.exists(os.path.join(tmpdir, f"AAPL_signal_5_{key}_meta.json"))
 
     def test_save_metadata_content(self, trained_model):
         features = ["ReturnsFeatures", "Sentiment"]
         signal = "signal_5"
         symbol = "AAPL"
+        key = _feature_key(features)
         with tempfile.TemporaryDirectory() as tmpdir:
             save_model(trained_model, features, signal, symbol, path=tmpdir)
-            meta_path = os.path.join(tmpdir, "AAPL_signal_5_meta.json")
+            meta_path = os.path.join(tmpdir, f"AAPL_signal_5_{key}_meta.json")
             with open(meta_path) as f:
                 meta = json.load(f)
             assert meta["features"] == features
@@ -91,10 +93,11 @@ class TestSaveModel:
         features = ["ReturnsFeatures"]
         signal = "signal_5"
         symbol = "TEST"
+        key = _feature_key(features)
         with tempfile.TemporaryDirectory() as tmpdir:
             nested = os.path.join(tmpdir, "sub", "dir")
             save_model(trained_model, features, signal, symbol, path=nested)
-            assert os.path.exists(os.path.join(nested, "TEST_signal_5.joblib"))
+            assert os.path.exists(os.path.join(nested, f"TEST_signal_5_{key}.joblib"))
 
 
 class TestLoadTrainedModel:
