@@ -4,6 +4,7 @@ from training.data_loader import load_training_data, load_latest_features
 from core.logger_config import logger
 import os
 import json
+from itertools import product
 
 
 def create_split(X, y, test_ratio=0.2):
@@ -99,3 +100,64 @@ def load_trained_model(features, signal, symbol, path="models"):
 
 def _feature_key(features):
     return "_".join(f.replace("Features", "").lower() for f in sorted(features))
+
+
+def walk_forward_grid_search(
+    features: list[str],
+    signal: str,
+    symbol: str,
+    param_grid: dict = None,
+    train_pct: float = 0.8,
+    retrain_every: int = 60,
+    min_confidence: float = 0.6,
+):
+    from backtesting.engine import walk_forward
+
+    if param_grid is None:
+        param_grid = {
+            "n_estimators": [100, 200, 300],
+            "max_depth": [4, 5, 6],
+            "learning_rate": [0.01, 0.05, 0.1],
+            "subsample": [0.7, 0.8],
+        }
+
+    keys = list(param_grid.keys())
+    values = list(param_grid.values())
+    combos = list(product(*values))
+
+    logger.info(f"Grid search: {len(combos)} parameter combinations")
+
+    results = []
+    for combo in combos:
+        params = dict(zip(keys, combo))
+        logger.info(f"Testing: {params}")
+
+        def make_model(**p):
+            return XGBoostModel(**p)
+
+        wf_result = walk_forward(
+            features=features,
+            signal=signal,
+            symbol=symbol,
+            train_pct=train_pct,
+            retrain_every=retrain_every,
+            min_confidence=min_confidence,
+            _model_params=params,
+        )
+
+        if wf_result:
+            metrics = wf_result["metrics"]
+            results.append({"params": params, "metrics": metrics})
+            logger.info(
+                f"  Sharpe: {metrics['sharpe_ratio']}, Return: {metrics['total_return']}%, Trades: {metrics['total_trades']}"
+            )
+
+    if not results:
+        logger.warning("No valid results from grid search")
+        return None
+
+    best = max(results, key=lambda r: r["metrics"]["sharpe_ratio"])
+    logger.info(f"Best params: {best['params']}")
+    logger.info(f"Best metrics: {best['metrics']}")
+
+    return {"best_params": best["params"], "all_results": results}

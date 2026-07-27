@@ -6,12 +6,19 @@ import numpy as np
 
 
 class XGBoostModel:
-    def __init__(self):
-        self.n_estimators = 50
-        self.learning_rate = 0.05
-        self.max_depth = 3
-        self.subsample = 0.6
-        self.colsample_bytree = 0.6
+    def __init__(
+        self,
+        n_estimators: int = 50,
+        learning_rate: float = 0.05,
+        max_depth: int = 3,
+        subsample: float = 0.6,
+        colsample_bytree: float = 0.6,
+    ):
+        self.n_estimators = n_estimators
+        self.learning_rate = learning_rate
+        self.max_depth = max_depth
+        self.subsample = subsample
+        self.colsample_bytree = colsample_bytree
         self.random_state = 42
         self.n_jobs = 1
         self.model = XGBClassifier(

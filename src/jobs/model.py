@@ -1,4 +1,5 @@
 import os
+import json
 from datetime import datetime, date
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -15,9 +16,19 @@ ENSEMBLE = [
 ]
 
 
+def load_best_params():
+    path = os.path.join("models", "best_params.json")
+    try:
+        with open(path) as f:
+            return json.load(f)["params"]
+    except (FileNotFoundError, KeyError, json.JSONDecodeError):
+        return {}
+
+
 def retrain_model(app):
     symbol = "AAPL"
     signal = "signal_5"
+    best_params = load_best_params()
 
     for features in ENSEMBLE:
         key = _feature_key(features)
@@ -29,7 +40,7 @@ def retrain_model(app):
                 logger.info(f"Model already trained today ({mtime}), skipping: {key}")
                 continue
 
-        model = XGBoostModel()
+        model = XGBoostModel(**best_params)
         train(model, features, signal, symbol)
         save_model(model, features, signal, symbol)
 
