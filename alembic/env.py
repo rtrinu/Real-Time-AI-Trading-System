@@ -5,6 +5,7 @@ from sqlalchemy import pool
 from core.config import settings
 from db.market_models import *
 from db.news_models import *
+from db.prediction_models import *
 from db.market_models import SQLModel
 from alembic import context
 

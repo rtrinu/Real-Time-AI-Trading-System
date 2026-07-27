@@ -5,6 +5,11 @@ from core.logger_config import logger
 import os
 import json
 from itertools import product
+from db.crud.general import bulk_insert
+import pandas as pd
+from db.prediction_models import Prediction
+from db.create_engine import get_session
+from datetime import datetime, timezone
 
 
 def create_split(X, y, test_ratio=0.2):
@@ -67,6 +72,20 @@ def ensemble_predict(models: dict, signal: str, symbol: str):
         "confidence": confidence,
         "date": date,
     }
+
+
+def save_prediction(symbol: str, signal: str, confidence: float, position_size: float):
+    session = get_session()
+    pred = Prediction(
+        symbol=symbol,
+        timestamp=datetime.now(timezone.utc),
+        predicted_signal=signal,
+        confidence=confidence,
+        position_size=position_size,
+    )
+    session.add(pred)
+    session.commit()
+    session.close()
 
 
 def save_model(model_type, features, signal, symbol, path="models"):
