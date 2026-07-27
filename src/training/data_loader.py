@@ -13,11 +13,11 @@ def load_training_data(symbol: str, features: list[str], signal: str):
 
     for table_name in features:
         model = TABLE_MAP[table_name]
-        cols = FEATURE_GROUPS[table_name] + CALENDAR_FEATURES
         rows = session.exec(select(model).where(model.symbol == symbol)).all()
         df = pd.DataFrame([r.model_dump() for r in rows])
         df["timestamp"] = pd.to_datetime(df["timestamp"])
         df["date"] = df["timestamp"].dt.date
+        df = df.drop(columns=["id", "timestamp"], errors="ignore")
         dfs[table_name] = df
 
     merged = dfs[features[0]]
@@ -86,6 +86,7 @@ def load_latest_features(features: list[str], symbol: str, signal: str):
         df = pd.DataFrame([r.model_dump() for r in rows])
         df["timestamp"] = pd.to_datetime(df["timestamp"])
         df["date"] = df["timestamp"].dt.date
+        df = df.drop(columns=["id", "timestamp"], errors="ignore")
         dfs[table_name] = df
 
     if not dfs:

@@ -10,8 +10,8 @@ class XGBoostModel:
         self.n_estimators = 50
         self.learning_rate = 0.05
         self.max_depth = 3
-        self.subsample = 0.8
-        self.colsample_bytree = 0.8
+        self.subsample = 0.6
+        self.colsample_bytree = 0.6
         self.random_state = 42
         self.n_jobs = 1
         self.model = XGBClassifier(

@@ -38,11 +38,11 @@ class VectorisedBacktest:
 
         for table_name in features:
             model = TABLE_MAP[table_name]
-            cols = FEATURE_GROUPS[table_name] + CALENDAR_FEATURES
             rows = session.exec(select(model).where(model.symbol == symbol)).all()
             df = pd.DataFrame([r.model_dump() for r in rows])
             df["timestamp"] = pd.to_datetime(df["timestamp"])
             df["date"] = df["timestamp"].dt.date
+            df = df.drop(columns=["id", "timestamp"], errors="ignore")
             dfs[table_name] = df
 
         merged = dfs[features[0]]
@@ -74,7 +74,7 @@ class VectorisedBacktest:
         merged = add_calendar_features(merged)
         merged[feature_cols] = merged[feature_cols].fillna(0)
 
-        ohlcv = session.exec(select(OHLCV).where(OHLCV.symbol == self.symbol)).all()
+        ohlcv = session.exec(select(OHLCV).where(OHLCV.symbol == symbol)).all()
         ohlcv_df = pd.DataFrame([r.model_dump() for r in ohlcv])
         ohlcv_df["date"] = ohlcv_df["timestamp"].dt.date
         merged = pd.merge(merged, ohlcv_df[["date", "close"]], on="date", how="left")
@@ -84,7 +84,6 @@ class VectorisedBacktest:
     def run(self):
         df = self.load_data()
 
-        # Predictions
         all_cols = []
         for table_name in self.features:
             all_cols.extend(FEATURE_GROUPS[table_name])

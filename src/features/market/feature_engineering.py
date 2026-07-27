@@ -199,13 +199,10 @@ def classify_trend_regime(pct_ret_20, roll_cum_ret_20):
 def classify_regime(vol_z_20, trend_regime, vol_regime):
     if vol_regime == "high_vol":
         return "neutral"
-
-    if trend_regime == "bull" and vol_z_20 > 1:
+    if trend_regime == "bull":
         return "bull"
-
-    if trend_regime == "bear" and vol_z_20 > 1:
+    if trend_regime == "bear":
         return "bear"
-
     return "neutral"
 
 

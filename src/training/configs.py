@@ -67,6 +67,7 @@ FEATURE_GROUPS = {
         "obv",
         "price_vol_interaction",
     ],
+    "RegimeFeatures": ["regime"],
 }
 
 TABLE_MAP = {
@@ -90,3 +91,5 @@ CALENDAR_FEATURES = [
     "is_friday",
     "is_monday",
 ]
+
+REGIMES = ["bull", "bear", "neutral"]

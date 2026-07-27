@@ -31,8 +31,8 @@ class TestXGBoostModelInit:
         assert model.n_estimators == 50
         assert model.max_depth == 3
         assert model.learning_rate == 0.05
-        assert model.subsample == 0.8
-        assert model.colsample_bytree == 0.8
+        assert model.subsample == 0.6
+        assert model.colsample_bytree == 0.6
 
     def test_model_is_xgb_classifier(self, model):
         from xgboost import XGBClassifier

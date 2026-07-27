@@ -168,7 +168,7 @@ class TestClassifyRegime:
 
     def test_neutral_low_vol_z(self):
         result = classify_regime(0.5, "bull", "normal")
-        assert result == "neutral"
+        assert result == "bull"
 
     def test_neutral_default(self):
         result = classify_regime(0.0, "neutral", "normal")
