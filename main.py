@@ -15,6 +15,7 @@ from jobs.market import market_scheduler, update_market_db
 from jobs.news import start_news_scheduler, news_scheduler
 from jobs.monitoring import start_monitoring_scheduler, monitoring_scheduler
 from jobs.predict import start_predict_scheduler, predict_scheduler
+from jobs.fill_poller import start_fill_poller, fill_poller_scheduler
 from broker.alpaca import create_client, execute_signal
 from ml.xgboost import XGBoostModel
 from training.trainer import train, save_model, load_trained_model
@@ -52,6 +53,7 @@ async def startup():
     update_market_db(app)
     start_monitoring_scheduler(app)
     start_predict_scheduler(app)
+    start_fill_poller(app)
 
     best_params = load_best_params()
 
@@ -86,6 +88,7 @@ async def shutdown():
     model_scheduler.shutdown()
     monitoring_scheduler.shutdown()
     predict_scheduler.shutdown()
+    fill_poller_scheduler.shutdown()
 
 
 @app.get("/health")
