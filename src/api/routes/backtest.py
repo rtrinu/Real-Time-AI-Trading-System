@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 from backtesting.engine import VectorisedBacktest
 from pydantic import BaseModel
 from backtesting.visualisation import save_all_charts
@@ -18,7 +18,11 @@ class BacktestRequest(BaseModel):
 
 @router.post("/backtest")
 def run_backtest(request: BacktestRequest, req: Request):
-    model = req.app.state.model
+    models = getattr(req.app.state, "models", None)
+    if not models:
+        raise HTTPException(status_code=503, detail="Models not loaded")
+    first_key = next(iter(models))
+    model = models[first_key]["model"]
     bt = VectorisedBacktest(
         model=model,
         symbol=request.symbol,
@@ -31,6 +35,6 @@ def run_backtest(request: BacktestRequest, req: Request):
     )
     result = bt.run()
     return {
-        "metrics": results["metrics"],
-        "chart_paths": results.get("chart_paths"),
+        "metrics": result["metrics"],
+        "chart_paths": result.get("chart_paths"),
     }

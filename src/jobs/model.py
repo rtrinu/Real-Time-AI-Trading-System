@@ -26,29 +26,36 @@ def load_best_params():
 
 
 def retrain_model(app):
-    symbol = "AAPL"
-    signal = "signal_5"
-    best_params = load_best_params()
+    try:
+        symbol = "AAPL"
+        signal = "signal_5"
+        best_params = load_best_params()
 
-    for features in ENSEMBLE:
-        key = _feature_key(features)
-        model_path = f"models/{symbol}_{signal}_{key}.joblib"
+        for features in ENSEMBLE:
+            try:
+                key = _feature_key(features)
+                model_path = f"models/{symbol}_{signal}_{key}.joblib"
 
-        if os.path.exists(model_path):
-            mtime = datetime.fromtimestamp(os.path.getmtime(model_path)).date()
-            if mtime == date.today():
-                logger.info(f"Model already trained today ({mtime}), skipping: {key}")
+                if os.path.exists(model_path):
+                    mtime = datetime.fromtimestamp(os.path.getmtime(model_path)).date()
+                    if mtime == date.today():
+                        logger.info(f"Model already trained today ({mtime}), skipping: {key}")
+                        continue
+
+                model = XGBoostModel(**best_params)
+                train(model, features, signal, symbol)
+                save_model(model, features, signal, symbol)
+
+                ensemble_key = "+".join(f.replace("Features", "") for f in features)
+                app.state.models[ensemble_key] = {"model": model, "features": features}
+                logger.info(f"Model retrained: {ensemble_key}")
+            except Exception as e:
+                logger.error(f"Failed to retrain {_feature_key(features)}: {e}")
                 continue
 
-        model = XGBoostModel(**best_params)
-        train(model, features, signal, symbol)
-        save_model(model, features, signal, symbol)
-
-        ensemble_key = "+".join(f.replace("Features", "") for f in features)
-        app.state.models[ensemble_key] = {"model": model, "features": features}
-        logger.info(f"Model retrained: {ensemble_key}")
-
-    logger.info("Ensemble retrained")
+        logger.info("Ensemble retrained")
+    except Exception as e:
+        logger.error(f"Model retraining failed: {e}")
 
 
 def start_model_scheduler(app):

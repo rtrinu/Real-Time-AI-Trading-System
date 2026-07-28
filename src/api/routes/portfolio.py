@@ -1,14 +1,23 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 
 router = APIRouter()
 
 
 @router.get("/portfolio")
 def portfolio(request: Request):
-    client = request.app.state.alpaca_client
+    client = getattr(request.app.state, "alpaca_client", None)
+    if not client:
+        raise HTTPException(status_code=503, detail="Alpaca client not initialized")
 
-    account = client.get_account()
-    positions = client.get_all_positions()
+    try:
+        account = client.get_account()
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Failed to fetch account: {e}")
+
+    try:
+        positions = client.get_all_positions()
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Failed to fetch positions: {e}")
 
     equity = float(account.equity)
     last_equity = float(getattr(account, "last_equity", "0"))
