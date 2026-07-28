@@ -20,14 +20,9 @@ from ml.xgboost import XGBoostModel
 from training.trainer import train, save_model, load_trained_model
 from pipeline.market_data import update_market_data
 from backtesting.engine import walk_forward
+from training.configs import ENSEMBLE
 
 app = FastAPI()
-
-MODELS = [
-    ["MomentumFeatures", "Sentiment"],
-    ["MomentumFeatures", "Sentiment", "MeanReversionFeatures"],
-    ["MomentumFeatures", "MeanReversionFeatures"],
-]
 
 
 def load_best_params():
@@ -61,7 +56,7 @@ async def startup():
     best_params = load_best_params()
 
     app.state.models = {}
-    for features in MODELS:
+    for features in ENSEMBLE:
         key = "+".join(f.replace("Features", "") for f in features)
         model = load_trained_model(features, signal, symbol)
         if model is None:

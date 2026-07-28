@@ -93,3 +93,9 @@ CALENDAR_FEATURES = [
 ]
 
 REGIMES = ["bull", "bear", "neutral"]
+
+ENSEMBLE = [
+    ["MomentumFeatures", "Sentiment"],
+    ["MomentumFeatures", "Sentiment", "MeanReversionFeatures"],
+    ["MomentumFeatures", "MeanReversionFeatures"],
+]

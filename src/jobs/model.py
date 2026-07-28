@@ -5,15 +5,10 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from ml.xgboost import XGBoostModel
 from training.trainer import train, save_model, load_trained_model, _feature_key
+from training.configs import ENSEMBLE
 from core.logger_config import logger
 
 model_scheduler = AsyncIOScheduler()
-
-ENSEMBLE = [
-    ["MomentumFeatures", "Sentiment"],
-    ["MomentumFeatures", "Sentiment", "MeanReversionFeatures"],
-    ["MomentumFeatures", "MeanReversionFeatures"],
-]
 
 
 def load_best_params():
@@ -33,13 +28,14 @@ def retrain_model(app):
 
         for features in ENSEMBLE:
             try:
-                key = _feature_key(features)
-                model_path = f"models/{symbol}_{signal}_{key}.joblib"
-
-                if os.path.exists(model_path):
+                model = load_trained_model(features, signal, symbol)
+                if model is not None:
+                    model_path = f"models/{symbol}_{signal}_{_feature_key(features)}.joblib"
                     mtime = datetime.fromtimestamp(os.path.getmtime(model_path)).date()
                     if mtime == date.today():
-                        logger.info(f"Model already trained today ({mtime}), skipping: {key}")
+                        logger.info(f"Model already trained today, skipping")
+                        ensemble_key = "+".join(f.replace("Features", "") for f in features)
+                        app.state.models[ensemble_key] = {"model": model, "features": features}
                         continue
 
                 model = XGBoostModel(**best_params)
@@ -50,7 +46,7 @@ def retrain_model(app):
                 app.state.models[ensemble_key] = {"model": model, "features": features}
                 logger.info(f"Model retrained: {ensemble_key}")
             except Exception as e:
-                logger.error(f"Failed to retrain {_feature_key(features)}: {e}")
+                logger.error(f"Failed to retrain {features}: {e}")
                 continue
 
         logger.info("Ensemble retrained")
