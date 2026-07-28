@@ -24,7 +24,7 @@ def execute_signal(client, symbol, signal, confidence, max_shares: int = 10):
 
     side = OrderSide.BUY if signal == "buy" else OrderSide.SELL
     qty = max(1, min(max_shares, int(confidence * max_shares)))
-    order = order = client.submit_order(
+    order = client.submit_order(
         MarketOrderRequest(
             symbol=symbol,
             qty=qty,

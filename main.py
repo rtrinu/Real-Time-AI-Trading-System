@@ -13,7 +13,7 @@ from jobs.market import market_scheduler, update_market_db
 from jobs.news import start_news_scheduler, news_scheduler
 from jobs.monitoring import start_monitoring_scheduler, monitoring_scheduler
 from jobs.predict import start_predict_scheduler, predict_scheduler
-
+from broker.alpaca import create_client, execute_signal
 from ml.xgboost import XGBoostModel
 from training.trainer import train, save_model, load_trained_model
 from pipeline.market_data import update_market_data
@@ -43,7 +43,7 @@ def load_best_params():
 async def startup():
     setup_logging()
     await db_startup()
-
+    app.state.alpaca_client = create_client()
     signal = "signal_5"
     symbol = "AAPL"
 

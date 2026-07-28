@@ -3,6 +3,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from training.trainer import ensemble_predict, save_prediction
 from core.logger_config import logger
+from broker.alpaca import execute_signal
 
 
 predict_scheduler = AsyncIOScheduler()
@@ -20,6 +21,14 @@ def daily_predict(app, symbol="AAPL", signal="signal_5"):
         confidence=result["confidence"],
         position_size=position_size,
     )
+
+    if result["signal"] != "hold":
+        order = execute_signal(
+            app.state.alpaca_client, symbol, result["signal"], result["confidence"]
+        )
+        logger.info(f"Order: {order}")
+    else:
+        logger.info("Hold signal — no trade")
 
     actions = {"buy": "Buy", "sell": "Sell", "hold": "Hold"}
     action = actions[result["signal"]]
