@@ -2,7 +2,7 @@ from core.config import settings
 from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
-from broker.risk import check_can_trade
+from broker.risk import check_can_trade, validate_order
 
 
 def create_client() -> TradingClient:
@@ -24,6 +24,11 @@ def execute_signal(client, symbol, signal, confidence, max_shares: int = 10):
 
     side = OrderSide.BUY if signal == "buy" else OrderSide.SELL
     qty = max(1, min(max_shares, int(confidence * max_shares)))
+
+    validation = validate_order(client, symbol, side, qty)
+    if not validation["valid"]:
+        return {"executed": False, "reason": validation["reason"]}
+
     order = client.submit_order(
         MarketOrderRequest(
             symbol=symbol,
