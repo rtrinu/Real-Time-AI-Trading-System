@@ -1,10 +1,9 @@
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
-from broker.risk import check_can_trade, validate_order
 from broker.alpaca import execute_signal
 from training.trainer import save_prediction
 from core.logger_config import logger
-from alpaca.trading.enums import OrderSide
+from db.create_engine import get_session
 
 router = APIRouter()
 
@@ -22,26 +21,16 @@ def trade(body: TradeRequest, request: Request):
     if not client:
         raise HTTPException(status_code=503, detail="Alpaca client not initialized")
 
-    if body.signal == "hold":
-        return {"executed": False, "reason": "Signal is hold"}
-
-    can_trade, reason = check_can_trade(client, body.symbol, body.signal)
-    if not can_trade:
-        return {"executed": False, "reason": reason}
-
-    side = OrderSide.BUY if body.signal == "buy" else OrderSide.SELL
-    qty = max(1, min(body.max_shares, int(body.confidence * body.max_shares)))
-
-    validation = validate_order(client, body.symbol, side, qty)
-    if not validation["valid"]:
-        return {"executed": False, "reason": validation["reason"]}
-
+    session = get_session()
     try:
         order = execute_signal(
-            client, body.symbol, body.signal, body.confidence, body.max_shares
+            client, body.symbol, body.signal, body.confidence, body.max_shares,
+            session=session, source="manual"
         )
     except Exception as e:
+        session.close()
         raise HTTPException(status_code=502, detail=f"Order execution failed: {e}")
+    session.close()
 
     try:
         save_prediction(

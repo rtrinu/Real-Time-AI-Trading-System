@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Query
 from db.create_engine import get_session
 from db.prediction_models import Prediction
+from db.trades import TradeAudit
 from sqlmodel import select, col
 
 from pydantic import BaseModel
@@ -68,6 +69,36 @@ def get_predictions(limit: int = 50):
         }
         for p in preds
     ]
+
+@router.get("/monitoring/audit")
+def get_audit_log(limit: int = Query(default=50, le=200)):
+    session = get_session()
+    rows = session.exec(
+        select(TradeAudit).order_by(col(TradeAudit.timestamp).desc()).limit(limit)
+    ).all()
+    session.close()
+    return [
+        {
+            "id": r.id,
+            "symbol": r.symbol,
+            "timestamp": str(r.timestamp),
+            "source": r.source,
+            "signal": r.signal,
+            "confidence": r.confidence,
+            "risk_check_passed": r.risk_check_passed,
+            "risk_check_reason": r.risk_check_reason,
+            "validation_passed": r.validation_passed,
+            "validation_reason": r.validation_reason,
+            "executed": r.executed,
+            "order_id": r.order_id,
+            "order_side": r.order_side,
+            "order_qty": r.order_qty,
+            "order_status": r.order_status,
+            "error_message": r.error_message,
+        }
+        for r in rows
+    ]
+
 
 @router.get("/monitoring/recent")
 def monitoring_recent(limit: int = 5):
