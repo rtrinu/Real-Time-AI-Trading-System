@@ -1,7 +1,9 @@
 from alpaca.trading.client import TradingClient
 
 
-def check_can_trade(client: TradingClient, symbol: str, signal: str, max_position_pct: float = 0.3):
+def check_can_trade(
+    client: TradingClient, symbol: str, signal: str, max_position_pct: float = 0.3
+):
     account = client.get_account()
     equity = float(account.equity)
     positions = client.get_all_positions()
