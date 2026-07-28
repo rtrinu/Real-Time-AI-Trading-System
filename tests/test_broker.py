@@ -85,6 +85,73 @@ class TestExecuteSignal:
 
         assert result["qty"] == 1
 
+    def test_returns_audit_id_when_session_provided(self, mock_client):
+        from broker.alpaca import _create_audit
+        mock_session = MagicMock()
+        mock_audit = MagicMock()
+        mock_audit.id = 42
+        with patch("broker.alpaca._create_audit", return_value=mock_audit):
+            result = execute_signal(
+                mock_client, "AAPL", "hold", 0.7, session=mock_session, source="test"
+            )
+        assert result["audit_id"] == 42
+
+    def test_creates_audit_on_successful_order(self, mock_client):
+        mock_session = MagicMock()
+        mock_audit = MagicMock()
+        mock_audit.id = 99
+        mock_order = MagicMock()
+        mock_order.id = "order_audit_1"
+        mock_order.status = "filled"
+        mock_client.submit_order.return_value = mock_order
+        with patch("broker.alpaca._create_audit", return_value=mock_audit), \
+             patch("broker.alpaca._update_audit") as mock_update:
+            result = execute_signal(
+                mock_client, "AAPL", "buy", 0.7, max_shares=10,
+                session=mock_session, source="test"
+            )
+        assert result["executed"] is True
+        assert result["audit_id"] == 99
+        mock_update.assert_called_once_with(
+            mock_session, mock_audit, risk_check_passed=True, validation_passed=True,
+            executed=True, order_id="order_audit_1", order_side="buy", order_qty=7,
+            order_status="filled"
+        )
+
+    def test_creates_audit_on_risk_rejection(self, mock_client):
+        mock_session = MagicMock()
+        mock_audit = MagicMock()
+        mock_audit.id = 88
+        with patch("broker.alpaca._create_audit", return_value=mock_audit), \
+             patch("broker.alpaca.check_can_trade", return_value=(False, "risk fail")), \
+             patch("broker.alpaca._update_audit") as mock_update:
+            result = execute_signal(
+                mock_client, "AAPL", "buy", 0.7, session=mock_session, source="test"
+            )
+        assert result["executed"] is False
+        assert result["reason"] == "risk fail"
+        assert result["audit_id"] == 88
+        mock_update.assert_called_once_with(
+            mock_session, mock_audit, risk_check_passed=False,
+            risk_check_reason="risk fail", executed=False
+        )
+
+    def test_creates_audit_on_order_error(self, mock_client):
+        mock_session = MagicMock()
+        mock_audit = MagicMock()
+        mock_audit.id = 77
+        mock_client.submit_order.side_effect = Exception("Connection failed")
+        with patch("broker.alpaca._create_audit", return_value=mock_audit), \
+             patch("broker.alpaca._update_audit") as mock_update:
+            with pytest.raises(Exception, match="Connection failed"):
+                execute_signal(
+                    mock_client, "AAPL", "buy", 0.7, session=mock_session, source="test"
+                )
+        mock_update.assert_called_once_with(
+            mock_session, mock_audit, risk_check_passed=True, validation_passed=True,
+            executed=False, error_message="Connection failed"
+        )
+
 
 class TestCheckCanTrade:
     def test_allows_trade_when_no_position(self, mock_client):
@@ -149,7 +216,7 @@ class TestCheckCanTrade:
 
     def test_ignores_other_symbols(self, mock_client):
         account = MagicMock()
-        account.equity = "10000"
+        account.equity = "100000"
         mock_client.get_account.return_value = account
         pos = MagicMock()
         pos.symbol = "MSFT"
@@ -159,6 +226,12 @@ class TestCheckCanTrade:
 
         can_trade, reason = check_can_trade(mock_client, "AAPL", "buy")
         assert can_trade is True
+
+    def test_handles_api_error_gracefully(self, mock_client):
+        mock_client.get_account.side_effect = Exception("API down")
+        can_trade, reason = check_can_trade(mock_client, "AAPL", "buy")
+        assert can_trade is False
+        assert "API down" in reason
 
 
 class TestValidateOrder:
@@ -203,3 +276,9 @@ class TestValidateOrder:
 
         result = validate_order(mock_client, "AAPL", "buy", 10)
         assert result["valid"] is True
+
+    def test_handles_api_error_gracefully(self, mock_client):
+        mock_client.get_account.side_effect = Exception("API down")
+        result = validate_order(mock_client, "AAPL", "buy", 10)
+        assert result["valid"] is False
+        assert "API down" in result["reason"]

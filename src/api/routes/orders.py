@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException, Request, Query
 from alpaca.trading.requests import GetOrdersRequest, ClosePositionRequest
-from alpaca.trading.enums import OrderStatus
 
 router = APIRouter()
 
@@ -37,14 +36,7 @@ def list_orders(
     if not client:
         raise HTTPException(status_code=503, detail="Alpaca client not initialized")
 
-    status_map = {
-        "open": OrderStatus.NEW,
-        "closed": OrderStatus.FILLED,
-        "canceled": OrderStatus.CANCELED,
-        "expired": OrderStatus.EXPIRED,
-        "rejected": OrderStatus.REJECTED,
-    }
-    filter_status = status_map.get(status) if status else None
+    filter_status = status if status in ("open", "closed", "all") else None
 
     try:
         orders = client.get_orders(
