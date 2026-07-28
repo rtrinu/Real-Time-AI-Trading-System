@@ -1,0 +1,9 @@
+.git/
+__pycache__/
+.venv/
+.env
+models/
+backtest_results/
+*.pyc
+.pytest_cache/
+.mypy_cache/
