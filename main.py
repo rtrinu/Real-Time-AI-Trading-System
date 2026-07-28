@@ -9,6 +9,7 @@ from api.routes.predict import router as predict_router
 from api.routes.backtest import router as backtest_router
 from api.routes.monitoring import router as monitoring_router
 from api.routes.trade import router as trade_router
+from api.routes.portfolio import router as portfolio_router
 from jobs.model import start_model_scheduler, model_scheduler
 from jobs.market import market_scheduler, update_market_db
 from jobs.news import start_news_scheduler, news_scheduler
@@ -102,5 +103,6 @@ app.include_router(predict_router)
 app.include_router(backtest_router)
 app.include_router(monitoring_router)
 app.include_router(trade_router)
+app.include_router(portfolio_router)
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
