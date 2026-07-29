@@ -7,6 +7,7 @@ from ml.xgboost import XGBoostModel
 from training.trainer import train, save_model, load_trained_model, _feature_key
 from training.configs import ENSEMBLE
 from core.logger_config import logger
+from core.notifications import notify
 
 model_scheduler = AsyncIOScheduler()
 
@@ -54,11 +55,13 @@ def retrain_model(app):
                 logger.info(f"Model retrained: {ensemble_key}")
             except Exception as e:
                 logger.error(f"Failed to retrain {features}: {e}")
+                notify(f"❌ **Retrain failed** ({features}): {e}")
                 continue
 
         logger.info("Ensemble retrained")
     except Exception as e:
         logger.error(f"Model retraining failed: {e}")
+        notify(f"❌ **Model retraining failed**: {e}")
 
 
 def start_model_scheduler(app):

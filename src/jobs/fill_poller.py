@@ -5,6 +5,7 @@ from db.create_engine import get_session
 from db.trades import TradeAudit
 from sqlmodel import select, col
 from core.logger_config import logger
+from core.notifications import notify
 
 fill_poller_scheduler = AsyncIOScheduler()
 
@@ -41,9 +42,16 @@ def poll_order_fills(app):
                 logger.info(
                     f"Order {audit.order_id} filled: {order.filled_qty} @ {order.filled_avg_price}"
                 )
+                notify(
+                    f"✅ **Order filled** #{audit.order_id}: "
+                    f"{order.filled_qty} {audit.symbol} @ ${order.filled_avg_price}"
+                )
             elif order.status in ("canceled", "expired", "rejected"):
                 audit.order_status = order.status
                 session.add(audit)
+                notify(
+                    f"⚠️ **Order {order.status}** #{audit.order_id}: {audit.symbol}"
+                )
         except Exception as e:
             logger.error(f"Failed to poll order {audit.order_id}: {e}")
 

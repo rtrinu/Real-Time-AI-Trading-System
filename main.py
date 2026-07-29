@@ -3,6 +3,7 @@ from fastapi import FastAPI
 
 from core.startup import startup
 from core.shutdown import shutdown
+from core.notifications import notify
 from api.routes.news import router as news_router
 from api.routes.predict import router as predict_router
 from api.routes.backtest import router as backtest_router
@@ -21,6 +22,7 @@ async def on_startup():
 
 @app.on_event("shutdown")
 async def on_shutdown():
+    notify("🛑 **Server shutting down**")
     await shutdown()
 
 

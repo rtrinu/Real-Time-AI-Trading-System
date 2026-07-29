@@ -3,6 +3,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from training.trainer import ensemble_predict, save_prediction
 from core.logger_config import logger
+from core.notifications import notify
 from broker.alpaca import execute_signal
 from db.create_engine import get_session
 
@@ -34,8 +35,22 @@ def daily_predict(app, symbol="AAPL", signal="signal_5"):
             source="scheduler",
         )
         logger.info(f"Order: {order}")
+        if order.get("executed"):
+            notify(
+                f"📈 **{symbol} {result['signal'].upper()}** "
+                f"{order.get('qty', '?')} shares "
+                f"(confidence={result['confidence']:.0%})"
+            )
+        else:
+            notify(
+                f"⏸️ **{symbol} skipped** — {order.get('reason', 'unknown')}"
+            )
     else:
         logger.info("Hold signal — no trade")
+        notify(
+            f"⏸️ **{symbol} HOLD** "
+            f"(confidence={result['confidence']:.0%})"
+        )
     session.close()
 
     actions = {"buy": "Buy", "sell": "Sell", "hold": "Hold"}

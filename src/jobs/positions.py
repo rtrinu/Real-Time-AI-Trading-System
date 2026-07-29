@@ -6,6 +6,7 @@ from alpaca.trading.requests import MarketOrderRequest
 from db.create_engine import get_session
 from broker.alpaca import _create_audit, _update_audit
 from core.logger_config import logger
+from core.notifications import notify
 
 TAKE_PROFIT_PCT = 5.0
 STOP_LOSS_PCT = -3.0
@@ -81,6 +82,10 @@ def manage_positions(app):
                 )
                 logger.info(
                     f"Position {action}: closed {close_qty} {symbol} ({direction}, P&L={plpc:+.1f}%)"
+                )
+                notify(
+                    f"{'✅' if action == 'take_profit' else '🛑'} **{action.replace('_', ' ').title()}** "
+                    f"{close_qty} {symbol} ({direction}, P&L={plpc:+.1f}%)"
                 )
             except Exception as e:
                 _update_audit(
