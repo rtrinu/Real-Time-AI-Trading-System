@@ -9,7 +9,7 @@ from db.crud.general import bulk_insert
 import pandas as pd
 from db.prediction_models import Prediction
 from db.create_engine import get_session
-from datetime import datetime, timezone
+from datetime import datetime, timezone, today_date
 
 
 def create_split(X, y, test_ratio=0.2):

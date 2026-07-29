@@ -54,7 +54,12 @@ def poll_order_fills(app):
 def start_fill_poller(app):
     fill_poller_scheduler.add_job(
         poll_order_fills,
-        CronTrigger(hour="16-19", minute="0,15,30,45", day_of_week="mon-fri"),
+        CronTrigger(
+            hour="16-19",
+            minute="0,15,30,45",
+            day_of_week="mon-fri",
+            timezone="US/Eastern",
+        ),
         args=[app],
         id="fill_poller",
         replace_existing=True,

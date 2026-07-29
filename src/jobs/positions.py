@@ -48,7 +48,14 @@ def manage_positions(app):
             close_side = OrderSide.SELL if close_signal == "sell" else OrderSide.BUY
 
             session = get_session()
-            audit = _create_audit(session, symbol, close_signal, confidence=1.0, position_size=1.0, source="position_manager")
+            audit = _create_audit(
+                session,
+                symbol,
+                close_signal,
+                confidence=1.0,
+                position_size=1.0,
+                source="position_manager",
+            )
 
             try:
                 order = client.submit_order(
@@ -59,12 +66,31 @@ def manage_positions(app):
                         time_in_force=TimeInForce.DAY,
                     )
                 )
-                _update_audit(session, audit, risk_check_passed=True, validation_passed=True, executed=True,
-                             order_id=order.id, order_side=close_side.value, order_qty=close_qty,
-                             order_status=str(order.status) if hasattr(order, "status") else None)
-                logger.info(f"Position {action}: closed {close_qty} {symbol} ({direction}, P&L={plpc:+.1f}%)")
+                _update_audit(
+                    session,
+                    audit,
+                    risk_check_passed=True,
+                    validation_passed=True,
+                    executed=True,
+                    order_id=order.id,
+                    order_side=close_side.value,
+                    order_qty=close_qty,
+                    order_status=(
+                        str(order.status) if hasattr(order, "status") else None
+                    ),
+                )
+                logger.info(
+                    f"Position {action}: closed {close_qty} {symbol} ({direction}, P&L={plpc:+.1f}%)"
+                )
             except Exception as e:
-                _update_audit(session, audit, risk_check_passed=True, validation_passed=True, executed=False, error_message=str(e))
+                _update_audit(
+                    session,
+                    audit,
+                    risk_check_passed=True,
+                    validation_passed=True,
+                    executed=False,
+                    error_message=str(e),
+                )
                 logger.error(f"Failed to close {symbol} position: {e}")
 
             session.close()
@@ -77,7 +103,9 @@ def start_position_scheduler(app):
     if not position_scheduler.get_job("position_manager"):
         position_scheduler.add_job(
             manage_positions,
-            CronTrigger(day_of_week="mon-fri", hour=15, minute=50),
+            CronTrigger(
+                day_of_week="mon-fri", hour=15, minute=50, timezone="US/Eastern"
+            ),
             args=[app],
             id="position_manager",
             replace_existing=True,

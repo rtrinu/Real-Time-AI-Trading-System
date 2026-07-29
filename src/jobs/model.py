@@ -30,12 +30,19 @@ def retrain_model(app):
             try:
                 model = load_trained_model(features, signal, symbol)
                 if model is not None:
-                    model_path = f"models/{symbol}_{signal}_{_feature_key(features)}.joblib"
+                    model_path = (
+                        f"models/{symbol}_{signal}_{_feature_key(features)}.joblib"
+                    )
                     mtime = datetime.fromtimestamp(os.path.getmtime(model_path)).date()
                     if mtime == date.today():
                         logger.info(f"Model already trained today, skipping")
-                        ensemble_key = "+".join(f.replace("Features", "") for f in features)
-                        app.state.models[ensemble_key] = {"model": model, "features": features}
+                        ensemble_key = "+".join(
+                            f.replace("Features", "") for f in features
+                        )
+                        app.state.models[ensemble_key] = {
+                            "model": model,
+                            "features": features,
+                        }
                         continue
 
                 model = XGBoostModel(**best_params)
@@ -57,7 +64,7 @@ def retrain_model(app):
 def start_model_scheduler(app):
     model_scheduler.add_job(
         retrain_model,
-        CronTrigger(hour=18, minute=0),
+        CronTrigger(hour=18, minute=0, timezone="US/Eastern"),
         args=[app],
         id="retrain",
         replace_existing=True,

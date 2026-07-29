@@ -35,13 +35,13 @@ def update_news_frequent():
 def start_news_scheduler(app):
     news_scheduler.add_job(
         update_news_data,
-        CronTrigger(hour=17, minute=0),
+        CronTrigger(hour=17, minute=0, timezone="US/Eastern"),
         id="update_news",
         replace_existing=True,
     )
     news_scheduler.add_job(
         update_news_frequent,
-        IntervalTrigger(minutes=15),
+        IntervalTrigger(minutes=15, timezone="US/Eastern"),
         id="update_news_frequent",
         replace_existing=True,
     )

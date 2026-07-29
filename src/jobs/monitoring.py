@@ -89,7 +89,7 @@ monitoring_scheduler = AsyncIOScheduler()
 def start_monitoring_scheduler(app):
     monitoring_scheduler.add_job(
         evaluate_predictions,
-        CronTrigger(hour=17, minute=30),
+        CronTrigger(hour=17, minute=30, timezone="US/Eastern"),
         id="monitoring",
         replace_existing=True,
     )

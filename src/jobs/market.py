@@ -8,7 +8,7 @@ market_scheduler = AsyncIOScheduler()
 def update_market_db(app):
     market_scheduler.add_job(
         update_market_data,
-        CronTrigger(day_of_week="mon-fri", hour=16, minute=5),
+        CronTrigger(day_of_week="mon-fri", hour=16, minute=5, timezone="US/Eastern"),
         id="update_market",
         replace_existing=True,
     )

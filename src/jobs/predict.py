@@ -26,8 +26,12 @@ def daily_predict(app, symbol="AAPL", signal="signal_5"):
     session = get_session()
     if result["signal"] != "hold":
         order = execute_signal(
-            app.state.alpaca_client, symbol, result["signal"], result["confidence"],
-            session=session, source="scheduler"
+            app.state.alpaca_client,
+            symbol,
+            result["signal"],
+            result["confidence"],
+            session=session,
+            source="scheduler",
         )
         logger.info(f"Order: {order}")
     else:
@@ -36,7 +40,9 @@ def daily_predict(app, symbol="AAPL", signal="signal_5"):
 
     actions = {"buy": "Buy", "sell": "Sell", "hold": "Hold"}
     action = actions[result["signal"]]
-    suggested = f"{action} {round(position_size * 100)}%" if position_size > 0 else "Hold"
+    suggested = (
+        f"{action} {round(position_size * 100)}%" if position_size > 0 else "Hold"
+    )
 
     logger.info(
         f"Daily prediction: {symbol} → {suggested} (confidence={result['confidence']:.2f})"
@@ -46,7 +52,7 @@ def daily_predict(app, symbol="AAPL", signal="signal_5"):
 def start_predict_scheduler(app):
     predict_scheduler.add_job(
         daily_predict,
-        CronTrigger(hour=16, minute=15, day_of_week="mon-fri"),
+        CronTrigger(hour=16, minute=15, day_of_week="mon-fri", timezone="US/Eastern"),
         args=[app],
         id="daily_predict",
         replace_existing=True,
