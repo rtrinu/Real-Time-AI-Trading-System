@@ -11,7 +11,7 @@ Real-time AI trading system. FastAPI backend, PostgreSQL (SQLModel + Alembic), R
 uv sync
 
 # Run dev server (from repo root — root main.py is the working entrypoint)
-uv run uvicorn main:app --reload
+uv run uvicorn main:app
 
 # Run tests
 uv run pytest
