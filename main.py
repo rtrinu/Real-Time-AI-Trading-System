@@ -4,6 +4,7 @@ from datetime import date
 from sqlmodel import select
 
 from core.logger_config import setup_logging, logger
+from core.health import wait_for, check_db_reachable, check_redis_reachable, check_alpaca_reachable
 from db.startup import db_startup
 from db.create_engine import get_session
 from db.market_models import OHLCV
@@ -36,6 +37,11 @@ app = FastAPI()
 @app.on_event("startup")
 async def startup():
     setup_logging()
+
+    await wait_for("Database", check_db_reachable)
+    await wait_for("Redis", check_redis_reachable)
+    await wait_for("Alpaca API", check_alpaca_reachable)
+
     await db_startup()
     app.state.alpaca_client = create_client()
     app.state.models = {}
