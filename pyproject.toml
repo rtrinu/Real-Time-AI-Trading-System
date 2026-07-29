@@ -27,6 +27,7 @@ dependencies = [
     "sqlmodel>=0.0.38",
     "torch>=2.12.1",
     "transformers>=5.12.1",
+    "tzdata>=2024.2",
     "uvicorn>=0.46.0",
     "websockets>=16.0",
     "xgboost>=3.3.0",
