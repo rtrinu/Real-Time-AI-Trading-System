@@ -1,4 +1,19 @@
 services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      DB_URL: postgresql://postgres:yourpassword@postgres:5432/postgres
+      REDIS_URL: redis://redis:6379
+    volumes:
+      - models:/app/models
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+    restart: unless-stopped
+
   postgres:
     image: postgres:16
     environment:
@@ -25,3 +40,4 @@ services:
 
 volumes:
   pgdata:
+  models:

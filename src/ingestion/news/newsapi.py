@@ -1,6 +1,6 @@
 import hashlib
 from core.config import settings
-from newsapi import NewsApiClient
+from newsapi.newsapi_client import NewsApiClient
 from datetime import datetime, timedelta, timezone
 from core.logger_config import logger
 

@@ -1,5 +1,7 @@
 from db.create_engine import check_db
 from core.logger_config import logger
+from alembic.config import Config
+from alembic import command
 
 
 async def db_startup():
@@ -7,3 +9,6 @@ async def db_startup():
     if not check_db():
         raise RuntimeError("Database Unavailable")
     logger.info("Database connection successfull")
+    logger.info("Running migrations")
+    alembic_cfg = Config("alembic.ini")
+    command.upgrade(alembic_cfg, "head")

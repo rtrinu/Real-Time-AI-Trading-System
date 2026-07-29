@@ -14,7 +14,11 @@ from sqlmodel import select, func
 
 
 def run_news_pipeline(
-    symbol: str = "AAPL", from_date: str = "2025-09-24", to_date: str = "2026-06-15"
+    symbol: str = "AAPL",
+    from_date: str = (datetime.now(timezone.utc) - timedelta(days=365)).strftime(
+        "%Y-%m-%d"
+    ),
+    to_date: str = datetime.now(timezone.utc).strftime("%Y-%m-%d"),
 ):
     logger.info("Starting News Pipeline")
     session = get_session()
@@ -68,9 +72,7 @@ def fetch_finnhub_only(symbol: str = "AAPL"):
     logger.info(f"Starting frequent Finnhub news fetch for {symbol}")
     session = get_session()
 
-    result = session.exec(
-        select(func.max(FinnhubNews.publishedAt))
-    ).first()
+    result = session.exec(select(func.max(FinnhubNews.publishedAt))).first()
     if result:
         last_fetched = result
         logger.info(f"Last fetched article: {last_fetched}")
@@ -90,9 +92,7 @@ def fetch_finnhub_only(symbol: str = "AAPL"):
 
     finnhub_cleaned = [finnhub_source.normalise(r, symbol) for r in finnhub_raw]
 
-    existing_titles = session.exec(
-        select(FinnhubNews.title)
-    ).all()
+    existing_titles = session.exec(select(FinnhubNews.title)).all()
     existing_hashes = set()
     for title in existing_titles:
         h = finnhub_source.article_hash(title)
