@@ -4,6 +4,7 @@ __pycache__/
 .env
 models/
 backtest_results/
+certs/
 *.pyc
 .pytest_cache/
 .mypy_cache/

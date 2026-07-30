@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     alpaca_secret_key: str
     alpaca_paper: bool = True
     discord_webhook_url: str = ""
+    api_key: str
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

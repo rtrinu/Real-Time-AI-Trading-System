@@ -25,7 +25,11 @@ COPY --from=builder /app/.venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONPATH=/app/src
 
-RUN mkdir -p /app/models
+RUN mkdir -p /app/models && \
+    adduser --disabled-password --gecos "" appuser && \
+    chown -R appuser:appuser /app
+
+USER appuser
 
 EXPOSE 8000
 
