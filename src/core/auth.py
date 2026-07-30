@@ -1,10 +1,11 @@
-from fastapi import Header, HTTPException
+from fastapi import Header, HTTPException, Request
 from core.config import settings
 
 
-def verify_api_key(x_api_key: str = Header(...)):
+def verify_api_key(x_api_key: str = Header(...), request: Request = None):
     if x_api_key != settings.api_key:
+        client = request.client.host if request and request.client else "unknown"
         with open("/app/logs/access.log", "a") as f:
-            f.write(f"FAIL2BAN 401 from invalid API key\n")
+            f.write(f"FAIL2BAN 401 from {client}\n")
         raise HTTPException(status_code=401, detail="Invalid API key")
     return x_api_key
