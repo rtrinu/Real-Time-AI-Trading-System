@@ -5,6 +5,13 @@ from core.startup import startup
 from core.shutdown import shutdown
 from core.notifications import notify
 from core.auth import verify_api_key
+from api.routes.news import router as news_router
+from api.routes.predict import router as predict_router
+from api.routes.backtest import router as backtest_router
+from api.routes.monitoring import router as monitoring_router
+from api.routes.trade import router as trade_router
+from api.routes.portfolio import router as portfolio_router
+from api.routes.orders import router as orders_router
 
 app = FastAPI()
 
