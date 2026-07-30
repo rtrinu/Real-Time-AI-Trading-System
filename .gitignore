@@ -12,6 +12,7 @@ wheels/
 # Environment
 .env
 certs/
+logs/
 
 # Models
 /models

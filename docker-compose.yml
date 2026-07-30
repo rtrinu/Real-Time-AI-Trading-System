@@ -9,12 +9,14 @@ services:
     volumes:
       - models:/app/models
       - ./certs:/app/certs:ro
+      - ./logs:/app/logs
     depends_on:
       postgres: { condition: service_healthy }
       redis:    { condition: service_healthy }
     restart: unless-stopped
     mem_limit: 2g
     cpus: "2.0"
+    command: ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port 8443 --ssl-keyfile /app/certs/key.pem --ssl-certfile /app/certs/cert.pem 2>&1 | tee /app/logs/access.log"]
 
   postgres:
     image: postgres:16
