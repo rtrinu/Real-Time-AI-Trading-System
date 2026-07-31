@@ -2,7 +2,12 @@ from datetime import date
 from sqlmodel import select
 
 from core.logger_config import setup_logging, logger
-from core.health import wait_for, check_db_reachable, check_redis_reachable, check_alpaca_reachable
+from core.health import (
+    wait_for,
+    check_db_reachable,
+    check_redis_reachable,
+    check_alpaca_reachable,
+)
 from db.startup import db_startup
 from db.create_engine import get_session
 from db.market_models import OHLCV
@@ -10,7 +15,7 @@ from db.news_models import NewsAPI
 from broker.alpaca import create_client
 from pipeline.market_data import run_yfinance_pipeline
 from pipeline.news_data import run_news_pipeline
-from jobs.model import start_model_scheduler
+from jobs.model import start_model_scheduler, retrain_model
 from jobs.market import update_market_db
 from jobs.news import start_news_scheduler
 from jobs.monitoring import start_monitoring_scheduler
