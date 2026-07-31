@@ -10,5 +10,5 @@
 ## Run
 
 ```bash
-uv run uvicorn src.api.main:app --reload
+uv run uvicorn main:app --reload
 ```

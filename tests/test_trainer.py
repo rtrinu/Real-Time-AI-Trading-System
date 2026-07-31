@@ -6,7 +6,14 @@ import tempfile
 import json
 from unittest.mock import patch, MagicMock
 from ml.xgboost import XGBoostModel
-from training.trainer import create_split, save_model, load_trained_model, predict, _feature_key
+from training.trainer import (
+    create_split,
+    save_model,
+    load_trained_model,
+    predict,
+    ensemble_predict,
+    _feature_key,
+)
 
 
 @pytest.fixture
@@ -188,3 +195,70 @@ class TestPredict:
         assert result["signal"] == "hold"
         assert result["confidence"] == 0.0
         assert result["date"] == ""
+
+
+class TestEnsemblePredict:
+    def _models(self, *probas):
+        models = {}
+        for i, proba in enumerate(probas):
+            model = MagicMock()
+            model.predict_proba.return_value = np.array(proba).reshape(1, -1)
+            models[f"model_{i}"] = {"model": model, "features": [f"Features_{i}"]}
+        return models
+
+    def _patch_latest(self, empty=False):
+        return patch(
+            "training.trainer.load_latest_features",
+            return_value=(
+                pd.DataFrame() if empty else pd.DataFrame({"feat_a": [0.1], "feat_b": [0.2]}),
+                "2026-06-22",
+            ),
+        )
+
+    def test_returns_averaged_dict(self, trained_model):
+        models = {"m1": {"model": trained_model, "features": ["ReturnsFeatures"]}}
+        with self._patch_latest():
+            result = ensemble_predict(models, "signal_5", "AAPL")
+        assert isinstance(result, dict)
+        assert "signal" in result
+        assert "confidence" in result
+        assert "date" in result
+
+    def test_averages_probabilities_across_models(self):
+        models = self._models([[0.1, 0.2, 0.7]], [[0.3, 0.5, 0.2]])
+        with self._patch_latest():
+            result = ensemble_predict(models, "signal_5", "AAPL")
+        assert result["signal"] == "buy"
+        assert result["confidence"] == pytest.approx(0.45)
+        assert result["date"] == "2026-06-22"
+
+    def test_signal_values(self):
+        models = self._models([[0.8, 0.1, 0.1]], [[0.7, 0.2, 0.1]])
+        with self._patch_latest():
+            result = ensemble_predict(models, "signal_5", "AAPL")
+        assert result["signal"] in {"sell", "hold", "buy"}
+        assert 0 <= result["confidence"] <= 1
+
+    def test_empty_features_returns_hold(self):
+        models = self._models([[0.1, 0.2, 0.7]])
+        with self._patch_latest(empty=True):
+            result = ensemble_predict(models, "signal_5", "AAPL")
+        assert result["signal"] == "hold"
+        assert result["confidence"] == 0.0
+
+    def test_skips_models_without_data(self):
+        models = self._models([[0.1, 0.2, 0.7]], [[0.1, 0.8, 0.1]])
+        with patch(
+            "training.trainer.load_latest_features",
+            side_effect=[(pd.DataFrame({"feat": [0.1]}), "2026-06-22"), (pd.DataFrame(), "")],
+        ):
+            result = ensemble_predict(models, "signal_5", "AAPL")
+        assert result["signal"] == "buy"
+        assert result["confidence"] == pytest.approx(0.7)
+
+    def test_skips_model_trained_on_fewer_classes(self):
+        models = self._models([[0.4, 0.6]], [[0.2, 0.3, 0.5]])
+        with self._patch_latest():
+            result = ensemble_predict(models, "signal_5", "AAPL")
+        assert result["signal"] == "buy"
+        assert result["confidence"] == pytest.approx(0.5)

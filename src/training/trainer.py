@@ -10,6 +10,7 @@ import pandas as pd
 from db.prediction_models import Prediction
 from db.create_engine import get_session
 from datetime import datetime, timezone
+import numpy as np
 
 
 def create_split(X, y, test_ratio=0.2):
@@ -60,7 +61,10 @@ def ensemble_predict(models: dict, signal: str, symbol: str):
         if x_latest.empty:
             continue
         proba = model.predict_proba(x_latest)
-        all_probas.append(proba)
+        if proba.shape[1] != 3:
+            logger.warning(f"Model {key} trained on {proba.shape[1]} classes, skipping")
+            continue
+        all_probas.append(proba[0])
         latest_date = date
 
     if not all_probas:
@@ -69,6 +73,14 @@ def ensemble_predict(models: dict, signal: str, symbol: str):
             "confidence": 0.0,
             "date": latest_date or str(today_date.today()),
         }
+
+    mean_proba = np.mean(all_probas, axis=0)
+    prediction = int(np.argmax(mean_proba))
+    return {
+        "signal": signal_map[prediction],
+        "confidence": float(mean_proba.max()),
+        "date": latest_date or str(today_date.today()),
+    }
 
 
 def save_prediction(symbol: str, signal: str, confidence: float, position_size: float):
