@@ -42,15 +42,10 @@ def daily_predict(app, symbol="AAPL", signal="signal_5"):
                 f"(confidence={result['confidence']:.0%})"
             )
         else:
-            notify(
-                f"⏸️ **{symbol} skipped** — {order.get('reason', 'unknown')}"
-            )
+            notify(f"⏸️ **{symbol} skipped** — {order.get('reason', 'unknown')}")
     else:
         logger.info("Hold signal — no trade")
-        notify(
-            f"⏸️ **{symbol} HOLD** "
-            f"(confidence={result['confidence']:.0%})"
-        )
+        notify(f"⏸️ **{symbol} HOLD** " f"(confidence={result['confidence']:.0%})")
     session.close()
 
     actions = {"buy": "Buy", "sell": "Sell", "hold": "Hold"}
@@ -67,7 +62,7 @@ def daily_predict(app, symbol="AAPL", signal="signal_5"):
 def start_predict_scheduler(app):
     predict_scheduler.add_job(
         daily_predict,
-        CronTrigger(hour=16, minute=15, day_of_week="mon-fri", timezone="US/Eastern"),
+        CronTrigger(hour=9, minute=35, day_of_week="mon-fri", timezone="US/Eastern"),
         args=[app],
         id="daily_predict",
         replace_existing=True,

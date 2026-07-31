@@ -1,6 +1,5 @@
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-from apscheduler.triggers.interval import IntervalTrigger
 from pipeline.news_data import run_news_pipeline
 from pipeline.news_data import fetch_finnhub_only
 from core.logger_config import logger
@@ -41,7 +40,7 @@ def start_news_scheduler(app):
     )
     news_scheduler.add_job(
         update_news_frequent,
-        IntervalTrigger(minutes=15, timezone="US/Eastern"),
+        CronTrigger(day_of_week="mon-fri", minute="*/15", timezone="US/Eastern"),
         id="update_news_frequent",
         replace_existing=True,
     )

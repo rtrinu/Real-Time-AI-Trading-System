@@ -49,6 +49,8 @@ async def startup(app):
         except Exception as e:
             logger.warning(f"News seed failed: {e}")
 
+    retrain_model(app)
+
     start_news_scheduler(app)
     start_model_scheduler(app)
     update_market_db(app)

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone, timedelta, time
 from db.create_engine import get_session
 from db.prediction_models import Prediction
 from db.market_models import OHLCV
@@ -24,19 +24,21 @@ def evaluate_predictions():
 
         for pred in unevaluated:
             try:
+                pred_date = pred.timestamp.date()
                 pred_close = session.exec(
                     select(OHLCV.close).where(
                         OHLCV.symbol == pred.symbol,
-                        OHLCV.timestamp == pred.timestamp,
+                        OHLCV.timestamp >= datetime.combine(pred_date, time.min),
+                        OHLCV.timestamp <= datetime.combine(pred_date, time.max),
                     )
                 ).first()
 
-                eval_date = pred.timestamp + timedelta(days=7)
+                eval_date = (pred.timestamp + timedelta(days=7)).date()
                 eval_close = session.exec(
                     select(OHLCV.close)
                     .where(
                         OHLCV.symbol == pred.symbol,
-                        OHLCV.timestamp <= eval_date,
+                        OHLCV.timestamp <= datetime.combine(eval_date, time.max),
                     )
                     .order_by(OHLCV.timestamp.desc())
                     .limit(1)

@@ -49,9 +49,7 @@ def poll_order_fills(app):
             elif order.status in ("canceled", "expired", "rejected"):
                 audit.order_status = order.status
                 session.add(audit)
-                notify(
-                    f"⚠️ **Order {order.status}** #{audit.order_id}: {audit.symbol}"
-                )
+                notify(f"⚠️ **Order {order.status}** #{audit.order_id}: {audit.symbol}")
         except Exception as e:
             logger.error(f"Failed to poll order {audit.order_id}: {e}")
 
@@ -63,7 +61,7 @@ def start_fill_poller(app):
     fill_poller_scheduler.add_job(
         poll_order_fills,
         CronTrigger(
-            hour="16-19",
+            hour="15-20",
             minute="0,15,30,45",
             day_of_week="mon-fri",
             timezone="US/Eastern",
