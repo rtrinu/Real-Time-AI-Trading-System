@@ -1,5 +1,7 @@
 # Real-Time AI Trading System
 
+[![CI](https://github.com/rtrinu/Real-Time-AI-Trading-System/actions/workflows/ci.yml/badge.svg)](https://github.com/rtrinu/Real-Time-AI-Trading-System/actions/workflows/ci.yml)
+
 An end-to-end automated trading system that ingests market and news data, trains ML models (XGBoost + FinBERT sentiment), generates daily trade signals, and executes them on Alpaca (paper trading) — all behind a secure FastAPI API.
 
 ## Highlights
@@ -13,16 +15,16 @@ An end-to-end automated trading system that ingests market and news data, trains
 
 ## Stack
 
-| Layer | Tech |
-|---|---|
-| API | FastAPI, Uvicorn |
-| Database | PostgreSQL 16, SQLModel, Alembic |
-| Cache/queue | Redis (health-checked only — not yet wired into the pipeline) |
-| ML | PyTorch, scikit-learn, XGBoost, FinBERT (transformers) |
-| Broker | Alpaca (paper) |
-| Data sources | yfinance, Finnhub, NewsAPI |
-| Scheduler | APScheduler |
-| Deploy | Docker Compose, nginx-less TLS via uvicorn SSL |
+| Layer        | Tech                                                          |
+| ------------ | ------------------------------------------------------------- |
+| API          | FastAPI, Uvicorn                                              |
+| Database     | PostgreSQL 16, SQLModel, Alembic                              |
+| Cache/queue  | Redis (health-checked only — not yet wired into the pipeline) |
+| ML           | PyTorch, scikit-learn, XGBoost, FinBERT (transformers)        |
+| Broker       | Alpaca (paper)                                                |
+| Data sources | yfinance, Finnhub, NewsAPI                                    |
+| Scheduler    | APScheduler                                                   |
+| Deploy       | Docker Compose, nginx-less TLS via uvicorn SSL                |
 
 ## Architecture
 
@@ -101,18 +103,18 @@ On startup the app waits for Postgres, Redis, and Alpaca, then seeds empty datab
 
 All endpoints require the `API_KEY` (send as `X-API-Key` header).
 
-| Method | Path | Description |
-|---|---|---|
-| GET | `/health` | Liveness check |
-| POST | `/news/backfill/{symbol}/{start}/{end}` | Backfill news + sentiment |
-| POST | `/predict` | Generate a signal for a symbol |
-| POST | `/backtest` | Run a vectorised backtest |
-| POST | `/trade` | Manually execute a signal on Alpaca |
-| GET | `/portfolio` | Current Alpaca portfolio |
-| GET | `/orders` | List/cancel orders, close positions |
-| GET | `/monitoring/accuracy` | Rolling prediction accuracy |
-| GET | `/monitoring/predictions` | Recent predictions |
-| GET | `/monitoring/audit` | Trade audit log |
+| Method | Path                                    | Description                         |
+| ------ | --------------------------------------- | ----------------------------------- |
+| GET    | `/health`                               | Liveness check                      |
+| POST   | `/news/backfill/{symbol}/{start}/{end}` | Backfill news + sentiment           |
+| POST   | `/predict`                              | Generate a signal for a symbol      |
+| POST   | `/backtest`                             | Run a vectorised backtest           |
+| POST   | `/trade`                                | Manually execute a signal on Alpaca |
+| GET    | `/portfolio`                            | Current Alpaca portfolio            |
+| GET    | `/orders`                               | List/cancel orders, close positions |
+| GET    | `/monitoring/accuracy`                  | Rolling prediction accuracy         |
+| GET    | `/monitoring/predictions`               | Recent predictions                  |
+| GET    | `/monitoring/audit`                     | Trade audit log                     |
 
 ## Deployment
 

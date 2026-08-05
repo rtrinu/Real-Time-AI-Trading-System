@@ -1,6 +1,6 @@
 import uvicorn
 from fastapi import FastAPI, Depends
-
+from contextlib import asynccontextmanager
 from core.startup import startup
 from core.shutdown import shutdown
 from core.notifications import notify
@@ -13,18 +13,16 @@ from api.routes.trade import router as trade_router
 from api.routes.portfolio import router as portfolio_router
 from api.routes.orders import router as orders_router
 
-app = FastAPI()
 
-
-@app.on_event("startup")
-async def on_startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     await startup(app)
-
-
-@app.on_event("shutdown")
-async def on_shutdown():
+    yield
     notify(" **Server shutting down**")
     await shutdown()
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/health")

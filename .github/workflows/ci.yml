@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build deps (psycopg2 compiles from source)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libpq-dev build-essential python3-dev
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Sync dependencies (frozen)
+        run: uv sync --frozen
+
+      - name: Create .env (Settings loads required keys at import time)
+        run: cp .env.example .env
+
+      - name: Run tests
+        run: uv run pytest

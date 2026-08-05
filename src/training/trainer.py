@@ -160,9 +160,6 @@ def walk_forward_grid_search(
         params = dict(zip(keys, combo))
         logger.info(f"Testing: {params}")
 
-        def make_model(**p):
-            return XGBoostModel(**p)
-
         wf_result = walk_forward(
             features=features,
             signal=signal,

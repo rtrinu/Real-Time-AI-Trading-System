@@ -81,6 +81,7 @@ def evaluate_predictions():
                 sum(1 for p in recent if p.is_correct) / len(recent) if recent else 0
             )
             logger.info(f"Accuracy (last {window}): {accuracy:.1%}")
+        session.close()
     except Exception as e:
         logger.error(f"Prediction evaluation failed: {e}")
 
