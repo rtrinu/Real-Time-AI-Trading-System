@@ -9,3 +9,6 @@ logs/
 *.pyc
 .pytest_cache/
 .mypy_cache/
+src/datasets/
+*.log
+.ruff_cache/

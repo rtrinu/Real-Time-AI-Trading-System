@@ -7,8 +7,8 @@ from core.logger_config import logger
 
 class NewsAPISource:
     def __init__(self, api_key):
-        self.api_key = api_key
-        self.newsapi = NewsApiClient(api_key=settings.newsapi_key)
+        self.api_key = settings.newsapi_key
+        self.newsapi = NewsApiClient(api_key=self.api_key)
 
     def fetch_raw_data(self, query):
         if not query:

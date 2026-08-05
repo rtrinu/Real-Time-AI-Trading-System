@@ -1,7 +1,7 @@
 [project]
 name = "real-time-ai-trading-system"
 version = "0.1.0"
-description = "Add your description here"
+description = "Real-time AI trading system: ML signal generation, Alpaca paper trading, and walk-forward backtesting via FastAPI"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
