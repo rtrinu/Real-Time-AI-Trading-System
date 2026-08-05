@@ -35,6 +35,10 @@ async def startup(app):
     app.state.alpaca_client = create_client()
     app.state.models = {}
 
+    if settings.dev_mode:
+        logger.info("DEV_MODE=true — skipping backfills, model retrain, and schedulers")
+        return
+
     session = get_session()
     ohlcv_empty = session.exec(select(OHLCV).limit(1)).first() is None
     news_empty = session.exec(select(NewsAPI).limit(1)).first() is None
