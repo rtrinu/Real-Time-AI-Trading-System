@@ -1,5 +1,5 @@
 from db.create_engine import check_db
-from core.logger_config import logger
+from core.logger_config import setup_logging, logger
 from alembic.config import Config
 from alembic import command
 
@@ -12,3 +12,4 @@ async def db_startup():
     logger.info("Running migrations")
     alembic_cfg = Config("alembic.ini")
     command.upgrade(alembic_cfg, "head")
+    setup_logging()

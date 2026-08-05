@@ -1,6 +1,7 @@
 from datetime import date
 from sqlmodel import select
 
+from core.config import settings
 from core.logger_config import setup_logging, logger
 from core.health import (
     wait_for,
