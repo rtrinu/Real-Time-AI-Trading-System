@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     discord_webhook_url: str = ""
     api_key: str
     dev_mode: bool = False
+    auth_log_path: str = "logs/access.log"
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
