@@ -12,6 +12,7 @@ from api.routes.monitoring import router as monitoring_router
 from api.routes.trade import router as trade_router
 from api.routes.portfolio import router as portfolio_router
 from api.routes.orders import router as orders_router
+from api.routes.train import router as train_router
 
 
 @asynccontextmanager
@@ -37,6 +38,7 @@ app.include_router(monitoring_router, dependencies=[Depends(verify_api_key)])
 app.include_router(trade_router, dependencies=[Depends(verify_api_key)])
 app.include_router(portfolio_router, dependencies=[Depends(verify_api_key)])
 app.include_router(orders_router, dependencies=[Depends(verify_api_key)])
+app.include_router(train_router, dependencies=[Depends(verify_api_key)])
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000)

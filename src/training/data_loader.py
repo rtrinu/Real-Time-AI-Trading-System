@@ -14,6 +14,8 @@ def load_training_data(symbol: str, features: list[str], signal: str):
     for table_name in features:
         model = TABLE_MAP[table_name]
         rows = session.exec(select(model).where(model.symbol == symbol)).all()
+        if not rows:
+            raise ValueError(f"No data found for {table_name} symbol={symbol}")
         df = pd.DataFrame([r.model_dump() for r in rows])
         df["timestamp"] = pd.to_datetime(df["timestamp"])
         df["date"] = df["timestamp"].dt.date
@@ -37,6 +39,8 @@ def load_training_data(symbol: str, features: list[str], signal: str):
         signal_rows = session.exec(
             select(ReturnsFeatures).where(ReturnsFeatures.symbol == symbol)
         ).all()
+        if not signal_rows:
+            raise ValueError(f"No signal data found for symbol={symbol}")
         signal_df = pd.DataFrame([r.model_dump() for r in signal_rows])
         signal_df["timestamp"] = pd.to_datetime(signal_df["timestamp"])
         signal_df["date"] = signal_df["timestamp"].dt.date

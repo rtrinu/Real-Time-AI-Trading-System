@@ -131,6 +131,17 @@ class TestLoadTrainingData:
         assert len(y) == 1
         assert y.iloc[0] == 2  # signal_5=1 maps to class 2
 
+    @patch("training.data_loader.get_session")
+    def test_raises_when_no_rows_for_symbol(self, mock_session):
+        from training.data_loader import load_training_data
+
+        mock_exec = MagicMock()
+        mock_exec.all.return_value = []
+        mock_session.return_value.exec.return_value = mock_exec
+
+        with pytest.raises(ValueError, match="No data found for ReturnsFeatures symbol=MSFT"):
+            load_training_data("MSFT", ["ReturnsFeatures"], "signal_5")
+
 
 class TestLoadLatestFeatures:
     @patch("training.data_loader.get_session")

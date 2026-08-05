@@ -22,10 +22,13 @@ def create_split(X, y, test_ratio=0.2):
 
 def train(model_type, features, signal, symbol):
     X, y = load_training_data(symbol, features, signal)
+    if X.empty or y.empty:
+        raise ValueError(f"No training data available for {symbol}")
     x_train, x_test, y_train, y_test = create_split(X, y)
     model_type.train(x_train, y_train, x_val=x_test, y_val=y_test)
     evaluate = model_type.evaluate(x_test, y_test)
     logger.info(evaluate)
+    return evaluate
 
 
 def predict(model_type, features: list[str], signal: str, symbol: str):
@@ -106,6 +109,7 @@ def save_model(model_type, features, signal, symbol, path="models"):
     with open(meta_path, "w") as f:
         json.dump({"features": features, "signal": signal, "symbol": symbol}, f)
     logger.info(f"Model saved to {model_path}")
+    return model_path
 
 
 def load_trained_model(features, signal, symbol, path="models"):
