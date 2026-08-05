@@ -10,18 +10,24 @@ Real-time AI trading system. FastAPI backend, PostgreSQL (SQLModel + Alembic), M
 # Package manager
 uv sync
 
-# Run dev server (from repo root — root main.py is the working entrypoint)
-uv run uvicorn main:app
+# Run dev server (from repo root — root main.py is the working entrypoint).
+# PYTHONPATH=src is required: bare imports like `core` resolve from src/.
+PYTHONPATH=src uv run uvicorn main:app
 
 # Run tests
 uv run pytest
 
-# Alembic migrations (DB_URL comes from .env)
-uv run alembic upgrade head
-uv run alembic revision --autogenerate -m "description"
+# Alembic migrations (DB_URL comes from .env; also needs PYTHONPATH=src)
+PYTHONPATH=src uv run alembic upgrade head
+PYTHONPATH=src uv run alembic revision --autogenerate -m "description"
+
+# PostgreSQL backup/restore (stdlib-only, runs without PYTHONPATH)
+python scripts/db_backup.py backup
+python scripts/db_backup.py list
+python scripts/db_backup.py restore <dump_file>
 ```
 
-No linter, formatter, or typecheck is configured. No CI exists yet.
+No linter, formatter, or typecheck is configured. CI runs on push to `master` and pull requests via `.github/workflows/ci.yml`.
 
 ## Import path gotcha
 
@@ -34,6 +40,14 @@ The actual app is root `main.py`. Tests import the app via `tests/conftest.py`.
 - **PostgreSQL** — `DB_URL` in `.env` (psycopg dialect)
 - **Redis** — `REDIS_URL` in `.env`. Note: Redis is **not properly set up yet** — it's only used for a startup health check (`src/core/health.py`); nothing stores or reads from it, so it is not required for features to work
 - `.env` is gitignored. Required keys: `REDIS_URL`, `FINNHUB_API`, `DB_URL`, `NEWSAPI_KEY`, `API_KEY`, `ALPACA_API_KEY`, `ALPACA_SECRET_KEY`
+
+## Backups
+
+`scripts/db_backup.py` creates/restores plain-SQL PostgreSQL dumps via `docker exec` into the Postgres container — no extra deps. Manual backups are the convention (run one before risky changes); there is no automated schedule.
+
+- Target auto-detection: `--container` flag → `PG_CONTAINER` env → running container `dev-pg` → compose service `postgres`. Any Postgres container works via `--container`.
+- Backups are gzipped to `~/backups/trading_db_<timestamp>.sql.gz` (override with `--out-dir` or `BACKUP_DIR`).
+- Restore is a plain reload onto the existing DB (tables aren't dropped); it's meant for a fresh/empty database.
 
 ## Architecture
 
@@ -57,7 +71,7 @@ src/
 ## Testing
 
 - pytest with `asyncio_mode = auto` (`pytest.ini`)
-- 217 tests across backtest engine/metrics, broker/risk, feature engineering, ML training, API routes, and schedulers
+- 245 tests across backtest engine/metrics, broker/risk, feature engineering, ML training, API routes, schedulers, auth, and the db backup CLI
 - Tests require the app to import cleanly, which means DB + .env must be present or imports must be mocked
 
 ## Conventions
