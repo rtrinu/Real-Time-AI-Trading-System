@@ -1,6 +1,6 @@
 # Real-Time ML Trading System
 
-[![CI](https://github.com/rtrinu/Real-Time-AI-Trading-System/actions/workflows/ci.yml/badge.svg)](https://github.com/rtrinu/Real-Time-AI-Trading-System/actions/workflows/ci.yml)
+[![CI](https://github.com/rtrinu/Real-Time-ML-Trading-System/actions/workflows/ci.yml/badge.svg)](https://github.com/rtrinu/Real-Time-ML-Trading-System/actions/workflows/ci.yml)
 
 An end-to-end automated trading system that ingests market and news data, trains ML models (XGBoost + FinBERT sentiment), generates daily trade signals, and executes them on Alpaca (paper trading) — all behind a secure FastAPI API.
 
@@ -11,7 +11,6 @@ An end-to-end automated trading system that ingests market and news data, trains
 - **Walk-forward backtesting** — vectorised backtest engine with rolling re-training, transaction costs, and chart generation
 - **Full trade audit trail** — every signal, risk check, validation, and order recorded in Postgres
 - **Security & ops** — API-key auth, HTTPS, fail2ban-compatible access logging, Discord notifications, Docker Compose deployment
-- **217 passing tests**
 
 ## Stack
 
@@ -54,7 +53,6 @@ An end-to-end automated trading system that ingests market and news data, trains
 ```
 
 Data flow: raw OHLCV/news → feature engineering (indicators + FinBERT sentiment) → XGBoost ensembles → signal + confidence → risk checks → Alpaca order → audit record → Discord notification.
-
 
 ## Quick start (local dev)
 
