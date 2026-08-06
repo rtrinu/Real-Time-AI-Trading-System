@@ -25,33 +25,6 @@ An end-to-end automated trading system that ingests market and news data, trains
 | Scheduler    | APScheduler                                                   |
 | Deploy       | Docker Compose, nginx-less TLS via uvicorn SSL                |
 
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                          FastAPI app                        │
-│                                                             │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────────┐  │
-│  │ news API │  │ predict  │  │ backtest │  │ trade/      │  │
-│  │ /news    │  │ /predict │  │ /backtest│  │ portfolio/  │  │
-│  │          │  │          │  │          │  │ orders      │  │
-│  └──────────┘  └──────────┘  └──────────┘  └────────────┘  │
-│                                                             │
-│  APScheduler jobs:                                          │
-│  ┌────────┐ ┌────────┐ ┌──────────┐ ┌────────────────┐     │
-│  │ market │ │ news   │ │ retrain  │ │ predict+execute│     │
-│  │ data   │ │ ingest │ │ models   │ │ (Alpaca)       │     │
-│  └────────┘ └────────┘ └──────────┘ └────────────────┘     │
-└───────────────────────────┬─────────────────────────────────┘
-                            │
-        ┌───────────────────┼───────────────────────┐
-        ▼                   ▼                       ▼
-  PostgreSQL          Redis                   Alpaca API
-  (features,          (startup health           (paper trading)
-   predictions,        check only — not
-   audit trail)        yet in use)
-```
-
 Data flow: raw OHLCV/news → feature engineering (indicators + FinBERT sentiment) → XGBoost ensembles → signal + confidence → risk checks → Alpaca order → audit record → Discord notification.
 
 ## Quick start (local dev)
