@@ -1,4 +1,4 @@
-# Real-Time AI Trading System
+# Real-Time ML Trading System
 
 [![CI](https://github.com/rtrinu/Real-Time-AI-Trading-System/actions/workflows/ci.yml/badge.svg)](https://github.com/rtrinu/Real-Time-AI-Trading-System/actions/workflows/ci.yml)
 
@@ -55,27 +55,6 @@ An end-to-end automated trading system that ingests market and news data, trains
 
 Data flow: raw OHLCV/news → feature engineering (indicators + FinBERT sentiment) → XGBoost ensembles → signal + confidence → risk checks → Alpaca order → audit record → Discord notification.
 
-## Directory layout
-
-```
-main.py                 FastAPI app + startup hooks
-src/
-  api/routes/           news, predict, backtest, monitoring, trade, portfolio, orders
-  backtesting/          vectorised backtest + walk-forward engine, metrics, charts
-  broker/               Alpaca client, risk management, trade execution
-  core/                 config, auth, health checks, logging, notifications
-  db/                   SQLModel models, engine, CRUD
-  features/             market indicators + FinBERT sentiment engineering
-  ingestion/            yfinance, Finnhub, NewsAPI fetchers
-  jobs/                 APScheduler jobs (market, news, model, predict, positions, …)
-  ml/                   XGBoost wrapper
-  pipeline/             orchestrators (market data, news)
-  scripts/              utilities (backfill, grid search)
-  training/             data loader, trainer, model configs
-models/                 trained model artifacts
-backtest_results/       generated backtest charts
-tests/                  217 tests
-```
 
 ## Quick start (local dev)
 
@@ -116,7 +95,7 @@ All endpoints require the `API_KEY` (send as `X-API-Key` header).
 | GET    | `/monitoring/predictions`               | Recent predictions                  |
 | GET    | `/monitoring/audit`                     | Trade audit log                     |
 
-## Deployment
+## Docker
 
 ```bash
 # Build and run the full stack (app + postgres + redis) behind TLS
@@ -130,8 +109,6 @@ Serves the API on `0.0.0.0:8443` with SSL, writes fail2ban-compatible access log
 ```bash
 uv run pytest
 ```
-
-217 tests covering the backtest engine, broker/risk logic, feature engineering, ML training, API routes, and schedulers.
 
 ## Roadmap
 
