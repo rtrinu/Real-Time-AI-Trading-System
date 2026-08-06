@@ -2,15 +2,15 @@
 
 [![CI](https://github.com/rtrinu/Real-Time-ML-Trading-System/actions/workflows/ci.yml/badge.svg)](https://github.com/rtrinu/Real-Time-ML-Trading-System/actions/workflows/ci.yml)
 
-An end-to-end automated trading system that ingests market and news data, trains ML models (XGBoost + FinBERT sentiment), generates daily trade signals, and executes them on Alpaca (paper trading) — all behind a secure FastAPI API.
+An automated trading system that ingests market and news data, trains ML models (XGBoost + FinBERT sentiment), generates daily trade signals, and executes them on Alpaca (paper trading).
 
 ## Highlights
 
-- **Automated trading loop** — scheduled jobs retrain models, predict signals, and place orders on Alpaca paper trading every market day
-- **ML pipeline** — ensemble of XGBoost models (momentum, mean-reversion, sentiment) with FinBERT news-sentiment features
-- **Walk-forward backtesting** — vectorised backtest engine with rolling re-training, transaction costs, and chart generation
-- **Full trade audit trail** — every signal, risk check, validation, and order recorded in Postgres
-- **Security & ops** — API-key auth, HTTPS, fail2ban-compatible access logging, Discord notifications, Docker Compose deployment
+- **Automated trading loop** - scheduled jobs retrain models, predict signals, and place orders on Alpaca paper trading every market day
+- **ML pipeline** - ensemble of XGBoost models with FinBERT news-sentiment features
+- **Walk-forward backtesting** - backtest engine with rolling re-training, transaction costs, and chart generation
+- **Full trade audit trail** - every signal, risk check, validation, and order recorded in Postgres
+- **Security & ops** - API-key auth, HTTPS, fail2ban-compatible access logging, Discord notifications, Docker Compose deployment
 
 ## Stack
 
@@ -18,7 +18,7 @@ An end-to-end automated trading system that ingests market and news data, trains
 | ------------ | ------------------------------------------------------------- |
 | API          | FastAPI, Uvicorn                                              |
 | Database     | PostgreSQL 16, SQLModel, Alembic                              |
-| Cache/queue  | Redis (health-checked only — not yet wired into the pipeline) |
+| Cache/queue  | Redis (health-checked only - not yet wired into the pipeline) |
 | ML           | PyTorch, scikit-learn, XGBoost, FinBERT (transformers)        |
 | Broker       | Alpaca (paper)                                                |
 | Data sources | yfinance, Finnhub, NewsAPI                                    |
@@ -42,7 +42,7 @@ make infra
 # 4. Run migrations
 uv run alembic upgrade head
 
-# 5. Run the app — on first boot it backfills ~2 years of
+# 5. Run the app - on first boot it backfills ~2 years of
 #    market data + news sentiment and trains initial models
 uv run uvicorn main:app --reload
 ```
